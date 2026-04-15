@@ -1,4 +1,4 @@
-import Inicio from "./Main/Inicio/page";
+import Inicio from "./Main/Inicio/page.tsx"
 
 export default function Home() {
   return (
