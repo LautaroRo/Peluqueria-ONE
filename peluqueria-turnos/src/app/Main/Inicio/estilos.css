@@ -1,0 +1,415 @@
+.container{
+display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #0f172a; /* Fondo oscuro pro */
+  font-family: 'Inter', sans-serif;
+}
+
+.calendario-card {
+  background: #1e293b;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 400px;
+  color: white;
+}
+
+.calendario-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.mes-titulo {
+  text-transform: capitalize;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.nav-btn {
+  background: #334155;
+  border: none;
+  color: white;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.nav-btn:hover {
+  background: #6366f1;
+}
+
+.calendario-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.dia-semana-label {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: bold;
+  padding-bottom: 10px;
+}
+
+.dia-celda {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+}
+
+.dia-celda:hover {
+  background: #334155;
+  border-color: #6366f1;
+}
+
+.dia-celda.seleccionado {
+  background: #6366f1;
+  color: white;
+  font-weight: bold;
+  transform: scale(1.1);
+}
+
+.dia-vacio {
+  pointer-events: none;
+}
+
+.calendario-footer {
+  margin-top: 2rem;
+  border-top: 1px solid #334155;
+  padding-top: 1.5rem;
+  text-align: center;
+}
+
+.info-turno {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.confirm-btn {
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+
+.dia-celda.deshabilitado {
+  color: #475569 !important;
+  background-color: transparent; 
+  cursor: not-allowed;
+  opacity: 0.3; 
+  text-decoration: none; 
+}
+
+
+.dia-celda.deshabilitado:hover {
+  background: transparent !important;
+  color: #475569 !important;
+  border-color: transparent !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+
+.form-detalles {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.back-link {
+  background: none;
+  border: none;
+  color: #818cf8;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.titulo-form {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.fecha-form {
+  color: #6366f1;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-transform: capitalize;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-group label {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.select-horario, .input-group input {
+  background: #334155;
+  border: 1px solid #475569;
+  padding: 12px;
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+}
+
+.select-horario:focus, .input-group input:focus {
+  border-color: #6366f1;
+}
+
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.confirm-btn.final {
+  margin-top: 20px;
+  background: #10b981; 
+}
+
+.confirm-btn.final:hover {
+  background: #059669;
+}
+
+
+
+
+
+@media (max-width: 768px) {
+  .calendario-card {
+    max-width: 90%;
+    padding: 1.5rem;
+  }
+
+  .mes-titulo {
+    font-size: 1rem;
+  }
+
+  .nav-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .dia-celda {
+    font-size: 0.8rem;
+  }
+}
+
+
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+
+  .calendario-card {
+    max-width: 100%;
+    padding: 1rem;
+    border-radius: 15px;
+  }
+
+  .calendario-header {
+    margin-bottom: 1rem;
+  }
+
+  .mes-titulo {
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .nav-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+
+  .calendario-grid {
+    gap: 5px;
+  }
+
+  .dia-semana-label {
+    font-size: 0.7rem;
+  }
+
+  .dia-celda {
+    font-size: 0.75rem;
+    border-radius: 6px;
+  }
+
+  .dia-celda.seleccionado {
+    transform: scale(1.05); /* menos zoom en mobile */
+  }
+
+  .calendario-footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+  }
+
+  .confirm-btn {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+
+  .titulo-form {
+    font-size: 1.2rem;
+  }
+
+  .fecha-form {
+    font-size: 0.9rem;
+  }
+
+  .select-horario,
+  .input-group input {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+}
+
+
+@media (max-width: 360px) {
+  .dia-celda {
+    font-size: 0.7rem;
+  }
+
+  .mes-titulo {
+    font-size: 0.8rem;
+  }
+
+  .nav-btn {
+    width: 25px;
+    height: 25px;
+  }
+}
+
+
+
+
+.horarios-carrusel {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto; 
+  padding: 10px 5px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin; 
+  scrollbar-color: #6366f1 #1e293b;
+}
+
+
+.horarios-carrusel::-webkit-scrollbar {
+  height: 5px;
+}
+.horarios-carrusel::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 10px;
+}
+
+.horario-card {
+  flex: 0 0 auto; 
+  background: #334155;
+  border: 1px solid #475569;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.horario-card:hover {
+  border-color: #6366f1;
+}
+
+.horario-card.active {
+  background: #6366f1;
+  border-color: #818cf8;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4);
+}
+
+.calendario-card {
+  max-width: 400px;
+  width: 95%; 
+}
+
+.titulo-form {
+  font-size: 1.2rem;
+  margin-top: 5px;
+}
+
+.input-group label {
+  font-size: 0.8rem;
+  margin-bottom: 5px;
+  display: block;
+}
+
+
+.input-group input {
+  padding: 10px;
+  font-size: 0.9rem;
+}
+
+.back-link {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.back-link:hover {
+  opacity: 1;
+}
+
+
+
+.horario-card.ocupado {
+  background: #1e293b;
+  color: #475569;
+  border-color: #334155;
+  cursor: not-allowed;
+  opacity: 0.5;
+  text-decoration: line-through; /* Opcional, para que sea súper claro */
+}
+
+.horario-card.ocupado:hover {
+  border-color: #ef4444; /* Rojo si intentan pasar el mouse */
+}

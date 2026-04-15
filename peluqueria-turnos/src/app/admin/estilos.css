@@ -1,0 +1,155 @@
+/* Reset y Base */
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: #0f172a;
+  font-family: 'Inter', sans-serif;
+}
+
+.admin-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px; /* Reducido para móviles */
+  box-sizing: border-box;
+}
+
+/* Header Adaptable */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* Para que el botón baje si no hay espacio */
+  gap: 15px;
+}
+
+.admin-header h1 {
+  color: white;
+  font-size: 1.8rem; /* Más chico para móviles */
+  margin: 0;
+}
+
+/* Contenedor Principal */
+.tabla-container {
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Tabla - Solo se ve en Desktop */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #e2e8f0;
+  display: table; /* Por defecto es tabla */
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 15px;
+  border-bottom: 2px solid #334155;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.admin-table td {
+  padding: 15px;
+  border-bottom: 1px solid #334155;
+}
+
+/* Badge y Links */
+.hora-badge {
+  color: #10b981;
+  font-weight: bold;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.wa-link {
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+/* Botones */
+.refresh-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* =============================================
+   MÓVILES (Menos de 768px)
+   ============================================= */
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 10px;
+  }
+
+  /* Convertimos la tabla en bloques (tarjetas) */
+  .admin-table, 
+  .admin-table thead, 
+  .admin-table tbody, 
+  .admin-table th, 
+  .admin-table td, 
+  .admin-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  /* Ocultamos el encabezado de la tabla (Fecha, Hora, etc) */
+  .admin-table thead {
+    display: none;
+  }
+
+  .admin-table tr {
+    margin-bottom: 15px;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 10px;
+    background: #1e293b;
+  }
+
+  .admin-table td {
+    text-align: right; /* El dato a la derecha */
+    padding: 8px 5px;
+    border-bottom: 1px solid #334155;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .admin-table td:last-child {
+    border-bottom: none;
+  }
+
+  /* Agregamos etiquetas antes de cada dato */
+  .admin-table td::before {
+    content: attr(data-label); /* Necesitás agregar esto en el HTML */
+    font-weight: bold;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+}
