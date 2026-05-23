@@ -1,169 +1,145 @@
 "use client";
-import { useState, useEffect } from "react";
-import { 
-  eachDayOfInterval, startOfMonth, endOfMonth, format, 
-  getDay, addMonths, subMonths, isSameDay, isBefore, startOfToday 
-} from "date-fns";
-import { es } from "date-fns/locale";
+import Link from "next/link";
 import "./estilos.css";
 
-export default function Page() {
-  const [fechaReferencia, setFechaReferencia] = useState(new Date()); 
-  const [seleccion, setSeleccion] = useState<Date | null>(null);
-  const [paso, setPaso] = useState(1);
-  
-  const [horario, setHorario] = useState("");
-  const [turnosOcupados, setTurnosOcupados] = useState<string[]>([]); // Horas ya reservadas
-  const [datos, setDatos] = useState({ nombre: "", apellido: "", dni: "", telefono: "" });
-
-  const hoy = startOfToday();
-  const inicioMes = startOfMonth(fechaReferencia);
-  const finMes = endOfMonth(fechaReferencia);
-  const diasDelMes = eachDayOfInterval({ start: inicioMes, end: finMes });
-  const espaciosVacios = Array.from({ length: getDay(inicioMes) });
-  const diasSemana = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-
-  // Generar horarios de 9:00 a 21:00
-  const horariosDisponibles = [];
-  for (let h = 9; h <= 20; h++) {
-    horariosDisponibles.push(`${h}:00`);
-    horariosDisponibles.push(`${h}:30`);
-  }
-  horariosDisponibles.push("21:00");
-
-  // EFECTO: Buscar turnos ocupados cuando cambia el día seleccionado
-  useEffect(() => {
-    if (seleccion) {
-      const buscarOcupados = async () => {
-        try {
-          const fechaStr = format(seleccion, "yyyy-MM-dd");
-          const res = await fetch(`/api/turnos?dia=${fechaStr}`);
-          const data = await res.json();
-          // Mapeamos para obtener solo las horas: ["10:00", "14:30"]
-          const horas = data.map((t: any) => t.Turno.Hora);
-          setTurnosOcupados(horas);
-          setHorario(""); // Limpiamos selección de hora previa si cambia el día
-        } catch (error) {
-          console.error("Error cargando ocupados:", error);
-        }
-      };
-      buscarOcupados();
-    }
-  }, [seleccion]);
-
-  const esMesActual = format(fechaReferencia, "MM-yyyy") === format(hoy, "MM-yyyy");
-
-  const manejarEnvio = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!horario) return alert("Por favor selecciona un horario");
-
-const turnoData = {
-  Nombre_Cliente: `${datos.nombre} ${datos.apellido}`,
-  Telefono_Cliente: Number(datos.telefono),
-  // Ya no incluimos el DNI aquí
-  Turno: {
-    Dia: format(seleccion!, "yyyy-MM-dd"),
-    Hora: horario
-  },
-  Estado: "Pending"
-};
-
-    try {
-      const response = await fetch("/api/turnos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(turnoData),
-      });
-
-      if (response.ok) {
-        alert("¡Turno reservado con éxito!");
-        setSeleccion(null);
-        setHorario("");
-        setPaso(1);
-      } else {
-        alert("Error al guardar el turno");
-      }
-    } catch (error) {
-      alert("Error de conexión");
-    }
-  };
-
+export default function Inicio() {
   return (
-    <main className="container">
-      <div className="calendario-card">
-        {paso === 1 ? (
-          <div className="animate-fade-in">
-            <div className="calendario-header">
-              <button className="nav-btn" onClick={() => setFechaReferencia(subMonths(fechaReferencia, 1))} disabled={esMesActual}>&lt;</button>
-              <h2 className="mes-titulo">{format(fechaReferencia, "MMMM yyyy", { locale: es })}</h2>
-              <button className="nav-btn" onClick={() => setFechaReferencia(addMonths(fechaReferencia, 1))}>&gt;</button>
-            </div>
+    <div className="one-landing-main-wrapper">
+      {/* 1. NAVBAR */}
+      <nav className="one-navbar-landing">
+        <h2 className="one-logo-landing">ONE</h2>
+        <div className="one-nav-actions-landing">
+          <Link href="/consultar" className="one-btn-nav-secondary-landing">
+            MI TURNO
+          </Link>
+          <Link href="/reservar" className="one-btn-nav-landing">
+            RESERVAR TURNO
+          </Link>
+        </div>
+      </nav>
 
-            <div className="calendario-grid">
-              {diasSemana.map((d) => <div key={d} className="dia-semana-label">{d}</div>)}
-              {espaciosVacios.map((_, i) => <div key={`empty-${i}`} className="dia-vacio" />)}
-              {diasDelMes.map((dia) => {
-                const estaSeleccionado = seleccion && isSameDay(dia, seleccion);
-                const esPasado = isBefore(dia, hoy);
-                return (
-                  <div
-                    key={dia.toString()}
-                    className={`dia-celda ${estaSeleccionado ? "seleccionado" : ""} ${esPasado ? "deshabilitado" : ""}`}
-                    onClick={() => !esPasado && setSeleccion(dia)}
-                  >
-                    {format(dia, "d")}
-                  </div>
-                );
-              })}
-            </div>
+      {/* 2. INICIO (HERO) */}
+      <header className="one-landing-hero">
+        <img src="/foto.jpg" alt="Peluquería One" className="one-landing-hero-img" />
+        <div className="one-landing-hero-overlay"></div>
+        <div className="one-landing-hero-content">
+          <span className="one-landing-hero-tag">ESTILO • PRECISIÓN • EXPERIENCIA</span>
+          <h1 className="one-landing-hero-title">ONE</h1>
+          <p className="one-landing-hero-text">
+            CORTE Y BARBERÍA EN EL CORAZÓN DE ZONA NORTE.
+          </p>
+          <Link href="/reservar" className="one-landing-btn-main">
+            SACAR TURNO
+          </Link>
+        </div>
+      </header>
 
-            <div className="calendario-footer">
-              {seleccion ? (
-                <div className="info-turno">
-                  <span>Día: <strong>{format(seleccion, "eeee d 'de' MMMM", { locale: es })}</strong></span>
-                  <button className="confirm-btn" onClick={() => setPaso(2)}>Confirmar Día</button>
-                </div>
-              ) : (
-                <p className="placeholder-text">Elige un día disponible</p>
-              )}
+      {/* 3. EL PELUQUERO */}
+      <section className="one-section-dark">
+        <div className="one-landing-section-container one-landing-profile-flex">
+          <div className="one-landing-profile-image-wrapper">
+            <img
+              src="/hector.jpg"
+              alt="Héctor Rodríguez"
+              className="one-landing-profile-img-main"
+            />
+          </div>
+
+          <div className="one-landing-profile-content">
+            <div className="one-landing-vertical-line"></div>
+            <span className="one-landing-label">EL PROFESIONAL</span>
+            <h2 className="one-landing-profile-name">
+              HECTOR <br /> <span>RODRIGUEZ</span>
+            </h2>
+            <div className="one-landing-profile-description">
+              <p style={{ color: '#fff', marginBottom: '15px', fontWeight: 'bold' }}>
+                Referente indiscutido de la Recta Martinolli.
+              </p>
+              <p>
+                Con décadas de experiencia en el rubro, Héctor ha convertido a
+                ONE en una experiencia única. Especialista en cortes clásicos y
+                modernos, su enfoque está en el detalle y la satisfacción de
+                cada cliente que se sienta en su sillón.
+              </p>
             </div>
           </div>
-        ) : (
-          <form className="form-detalles animate-fade-in" onSubmit={manejarEnvio}>
-            <button type="button" className="back-link" onClick={() => setPaso(1)}>← Volver</button>
-            <h2 className="titulo-form">Detalles</h2>
-            <p className="fecha-form">{format(seleccion!, "dd 'de' MMMM", { locale: es })}</p>
+        </div>
+      </section>
 
-            <div className="input-group">
-              <label>Horario disponible:</label>
-              <div className="horarios-carrusel">
-                {horariosDisponibles.map((h) => {
-                  const estaOcupado = turnosOcupados.includes(h);
-                  return (
-                    <button
-                      key={h}
-                      type="button"
-                      disabled={estaOcupado}
-                      className={`horario-card ${horario === h ? "active" : ""} ${estaOcupado ? "ocupado" : ""}`}
-                      onClick={() => !estaOcupado && setHorario(h)}
-                    >
-                      {h}
-                    </button>
-                  );
-                })}
+      {/* 4. UBICACIÓN Y MAPA */}
+      <section className="one-section-black">
+        <div className="one-landing-section-container">
+          <div className="one-landing-location-grid">
+            <div className="one-landing-location-info">
+              <h3 className="one-landing-italic-title">UBICACIÓN</h3>
+              <p style={{ fontSize: '20px', fontWeight: 'bold' }}>Heriberto Martínez 6814</p>
+              <p style={{ color: '#555', marginBottom: '20px' }}>Arguello, Córdoba Capital</p>
+
+              <div className="one-map-container">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3407.132801265842!2d-64.2546454!3d-31.3553259!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x943299388f8d5e87%3A0x6b847f874ded26d8!2sHeriberto%20Mart%C3%ADnez%206814%2C%20X5000%20C%C3%B3rdoba!5e0!3m2!1ses-419!2sar!4v1713245000000!5m2!1ses-419!2sar"
+                  width="100%"
+                  height="300"
+                  style={{ border: 0, filter: 'grayscale(1) invert(0.9)' }}
+                  allowFullScreen={true}
+                  loading="lazy"
+                ></iframe>
               </div>
             </div>
 
-            <div className="input-group">
-              <input type="text" placeholder="Nombre" required onChange={(e) => setDatos({...datos, nombre: e.target.value})} />
-              <input type="text" placeholder="Apellido" required onChange={(e) => setDatos({...datos, apellido: e.target.value})} />
-              <input type="number" placeholder="Teléfono" required onChange={(e) => setDatos({...datos, telefono: e.target.value})} />
+            <div className="one-landing-hours-info">
+              <h3 className="one-landing-italic-title">HORARIOS</h3>
+              <div className="one-landing-hour-row">
+                <span>Martes a Viernes</span> <span>10:00 - 20:00</span>
+              </div>
+              <div className="one-landing-hour-row">
+                <span>Sábados</span> <span>09:00 - 19:00</span>
+              </div>
+              <p style={{ color: '#333', fontSize: '12px', marginTop: '15px', textAlign: 'right' }}>
+                Domingos y Lunes cerrado
+              </p>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <button type="submit" className="confirm-btn final">Finalizar Reserva</button>
-          </form>
-        )}
-      </div>
-    </main>
+      {/* 5. OPINIONES */}
+      <section className="one-section-dark">
+        <div className="one-landing-section-container">
+          <span className="one-landing-label" style={{ display: 'block', textAlign: 'center' }}>
+            LO QUE DICEN NUESTROS CLIENTES
+          </span>
+          <h2 className="one-landing-profile-name" style={{ textAlign: 'center', marginBottom: '40px' }}>OPINIONES</h2>
+          <div className="one-landing-reviews-grid">
+            <div className="one-landing-review-card">
+              <div style={{ color: '#fff', marginBottom: '15px' }}>★★★★★</div>
+              <p style={{ color: '#888', lineHeight: '1.6' }}>
+                "Héctor es un crack. Hace años que me corto con él y la atención es impecable."
+              </p>
+              <h4 style={{ marginTop: '15px' }}>- Marcos R.</h4>
+            </div>
+            <div className="one-landing-review-card">
+              <div style={{ color: '#fff', marginBottom: '15px' }}>★★★★★</div>
+              <p style={{ color: '#888', lineHeight: '1.6' }}>
+                "El mejor sistema de turnos de la zona. Llegas y te atiende al toque. Muy profesional."
+              </p>
+              <h4 style={{ marginTop: '15px' }}>- Franco Batistella</h4>
+            </div>
+            <div className="one-landing-review-card">
+              <div style={{ color: '#fff', marginBottom: '15px' }}>★★★★★</div>
+              <p style={{ color: '#888', lineHeight: '1.6' }}>
+                "Excelente barbería en zona norte. Ambiente tranquilo y un corte perfecto."
+              </p>
+              <h4 style={{ marginTop: '15px' }}>- Gastón Juárez</h4>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. FOOTER */}
+      <footer className="one-footer-landing">
+        <p>© {new Date().getFullYear()} ONE PELUQUERÍA — DESIGNED BY LAUTI</p>
+      </footer>
+    </div>
   );
 }

@@ -1,0 +1,666 @@
+/* ==========================================
+   ONES PELUQUERÍA — ESTILOS GLOBALES
+   ========================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.one-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #000000;
+  color: #ffffff;
+  padding-top: 80px; /* Evita que la navbar tape la tarjeta */
+}
+
+/* Animaciones */
+.one-animate-fade-in, .one-fade-in {
+  animation: one-fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes one-fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================
+   NAVBAR FIXED
+   ========================================== */
+.one-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 16px 5%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #1a1a1a;
+  z-index: 1000;
+  gap: 12px; /* Espaciado entre los botones cuando se junten */
+}
+
+.one-logo {
+  margin-right: auto; 
+  font-size: 20px;
+  font-weight: 900;
+  font-style: italic;
+  color: #ffffff;
+  letter-spacing: 2px;
+}
+
+.one-btn-nav {
+  color: #ffffff;
+  text-decoration: none;
+  border: 1px solid #1a1a1a;
+  background: #0d0d0d;
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.one-btn-nav:hover {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+
+/* ==========================================
+   TARJETA DEL CALENDARIO & FORMULARIO
+   ========================================== */
+.one-calendario-card {
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  width: 100%;
+  max-width: 420px;
+  margin: auto 20px; /* Centrado vertical perfecto en la pantalla */
+  box-sizing: border-box;
+}
+
+.one-calendario-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.one-mes-titulo {
+  text-transform: capitalize;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.one-nav-btn {
+  background: #1a1a1a;
+  border: none;
+  color: #ffffff;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.one-nav-btn:hover:not(:disabled) {
+  background: #333333;
+}
+
+.one-nav-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+/* Grilla del Mes */
+.one-calendario-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.one-dia-semana-label {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #444444;
+  font-weight: bold;
+  padding-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.one-dia-vacio {
+  pointer-events: none;
+}
+
+.one-dia-celda {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+  color: #ffffff;
+}
+
+.one-dia-celda:hover:not(.one-deshabilitado) {
+  background: #1a1a1a;
+  border-color: #333333;
+}
+
+.one-dia-celda.one-seleccionado {
+  background: #ffffff;
+  color: #000000;
+  font-weight: bold;
+  transform: scale(1.05);
+}
+
+.one-dia-celda.one-deshabilitado {
+  color: #333333 !important;
+  background-color: transparent !important;
+  cursor: not-allowed;
+  opacity: 0.4;
+  text-decoration: line-through;
+  text-decoration-color: #444444;
+}
+
+/* Footer de la tarjeta */
+.one-calendario-footer {
+  margin-top: 2rem;
+  border-top: 1px solid #1a1a1a;
+  padding-top: 1.5rem;
+  text-align: center;
+}
+
+.one-placeholder-text {
+  color: #666666;
+  font-size: 14px;
+}
+
+.one-info-turno {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.one-info-turno span {
+  font-size: 14px;
+  color: #888888;
+}
+
+.one-info-turno strong {
+  color: #ffffff;
+  text-transform: capitalize;
+}
+
+/* Botones de Acción Estilo Minimalista */
+.one-confirm-btn {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.one-confirm-btn:hover:not(:disabled) {
+  background: #e5e5e5;
+}
+
+.one-confirm-btn:disabled {
+  background: #1a1a1a;
+  color: #444444;
+  cursor: not-allowed;
+}
+
+.one-confirm-btn.one-final {
+  margin-top: 15px;
+}
+
+/* ==========================================
+   FORMULARIO DE DETALLES Y INPUTS
+   ========================================== */
+.one-form-detalles {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  position: relative;
+}
+
+.one-titulo-form {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.one-fecha-form {
+  color: #888888;
+  font-size: 14px;
+  margin-bottom: 5px;
+  text-transform: capitalize;
+}
+
+.one-back-link {
+  background: transparent;
+  border: none;
+  color: #888888;
+  font-size: 0.9rem;
+  cursor: pointer;
+  align-self: flex-start;
+  padding: 5px 0;
+  transition: color 0.2s ease;
+  margin-bottom: 5px;
+}
+
+.one-back-link:hover {
+  color: #ffffff;
+}
+
+.one-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.one-input-group label {
+  font-size: 13px;
+  color: #888888;
+}
+
+.one-input-group input {
+  background: #0d0d0d;
+  border: 1px solid #1a1a1a;
+  padding: 14px;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 14px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.one-input-group input:focus {
+  border-color: #ffffff;
+}
+
+/* Ocultar flechitas de input number */
+.one-input-group input[type=number]::-webkit-inner-spin-button, 
+.one-input-group input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+/* Carrusel Horizontal Deslizable */
+.one-horarios-carrusel {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 5px 2px 15px 2px;
+  scrollbar-width: thin;
+  scrollbar-color: #333333 #0a0a0a;
+  -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+}
+
+.one-horarios-carrusel::-webkit-scrollbar {
+  height: 4px;
+}
+
+.one-horarios-carrusel::-webkit-scrollbar-thumb {
+  background-color: #222222;
+  border-radius: 10px;
+}
+
+.one-horario-card {
+  flex: 0 0 auto;
+  background: #0d0d0d;
+  border: 1px solid #1a1a1a;
+  color: #ffffff;
+  padding: 10px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.one-horario-card:hover:not(:disabled) {
+  border-color: #444444;
+}
+
+.one-horario-card.one-active {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+
+.one-horario-card:disabled, .one-horario-card.one-ocupado {
+  background: #050505 !important;
+  color: #252525 !important;
+  border-color: #111111 !important;
+  cursor: not-allowed;
+  opacity: 0.3;
+  text-decoration: line-through;
+}
+
+/* ==========================================
+   FOOTER
+   ========================================== */
+.one-footer-one {
+  padding: 40px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: auto;
+  width: 100%;
+}
+
+.one-footer-container {
+  width: 90%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.one-footer-credits {
+  color: #444444;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* ==========================================
+   MEDIA QUERIES (RESPONSIVE SEGURO)
+   ========================================== */
+@media (max-width: 480px) {
+  .one-navbar {
+    padding: 16px 20px;
+  }
+
+  .one-calendario-card {
+    max-width: calc(100% - 30px);
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+
+  .one-mes-titulo {
+    font-size: 1.1rem;
+  }
+
+  .one-calendario-grid {
+    gap: 6px;
+  }
+
+  .one-dia-celda {
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  .one-titulo-form {
+    font-size: 1.25rem;
+  }
+
+  .one-input-group input {
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  .one-footer-one {
+    padding: 30px 0;
+  }
+
+  .one-footer-credits {
+    font-size: 9px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+}
+
+/* ==========================================
+   ESTILOS DEL MODAL DE FEEDBACK (ALERT LINDO)
+   ========================================== */
+.one-feedback-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.one-feedback-modal-card {
+  background: #0a0a0a;
+  border: 1px solid #222222;
+  border-radius: 20px;
+  padding: 30px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  box-sizing: border-box;
+}
+
+.one-animate-pop-in {
+  animation: one-popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes one-popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.one-feedback-mensaje {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 20px 0 25px 0;
+}
+
+.one-feedback-btn {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  padding: 12px;
+  width: 100%;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.one-feedback-btn:hover {
+  background: #e5e5e5;
+}
+
+/* Container de iconos */
+.one-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
+  margin-bottom: 10px;
+}
+
+/* ==========================================
+   ANIMACIÓN DEL TICK (SUCCESS) estilo premium
+   ========================================== */
+.one-success-checkmark {
+  width: 80px;
+  height: 80px;
+}
+
+.one-success-checkmark .one-check-icon {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  border-radius: 50%;
+  box-sizing: content-box;
+  border: 4px solid #00c851;
+}
+
+.one-success-checkmark .one-check-icon::before, 
+.one-success-checkmark .one-check-icon::after {
+  content: '';
+  position: absolute;
+  background: #0a0a0a;
+  z-index: 1;
+}
+
+.one-success-checkmark .one-check-icon .one-icon-line {
+  height: 5px;
+  background-color: #00c851;
+  display: block;
+  border-radius: 2px;
+  position: absolute;
+  z-index: 10;
+}
+
+.one-success-checkmark .one-check-icon .one-icon-line.one-line-tip {
+  width: 25px;
+  left: 14px;
+  top: 46px;
+  transform: rotate(45deg);
+  animation: one-icon-line-tip 0.75s;
+}
+
+.one-success-checkmark .one-check-icon .one-icon-line.one-line-long {
+  width: 47px;
+  right: 10px;
+  top: 38px;
+  transform: rotate(-45deg);
+  animation: one-icon-line-long 0.75s;
+}
+
+.one-success-checkmark .one-check-icon .one-icon-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 4px solid rgba(0, 200, 81, 0.2);
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  z-index: 2;
+  box-sizing: content-box;
+}
+
+@keyframes one-icon-line-tip {
+  0% { width: 0; left: 1px; top: 19px; }
+  54% { width: 0; left: 1px; top: 19px; }
+  70% { width: 5px; left: 14px; top: 37px; }
+  84% { width: 17px; left: 14px; top: 48px; }
+  100% { width: 25px; left: 14px; top: 46px; }
+}
+
+@keyframes one-icon-line-long {
+  0% { width: 0; right: 46px; top: 54px; }
+  65% { width: 0; right: 46px; top: 54px; }
+  84% { width: 38px; right: 21px; top: 33px; }
+  100% { width: 47px; right: 10px; top: 38px; }
+}
+
+/* ==========================================
+   ANIMACIÓN DE LA X (ERROR)
+   ========================================== */
+.one-error-xmark {
+  width: 80px;
+  height: 80px;
+  border: 4px solid #ff4444;
+  border-radius: 50%;
+  position: relative;
+  background: rgba(255, 68, 68, 0.05);
+}
+
+.one-error-xmark .one-x-icon {
+  position: relative;
+  height: 80px;
+}
+
+.one-error-xmark .one-x-line {
+  display: block;
+  height: 5px;
+  width: 40px;
+  background-color: #ff4444;
+  border-radius: 2px;
+  position: absolute;
+  top: 34px;
+  left: 16px;
+}
+
+.one-error-xmark .one-x-line.one-line-left {
+  transform: rotate(45deg);
+  animation: one-x-left 0.3s ease-in-out;
+}
+
+.one-error-xmark .one-x-line.one-line-right {
+  transform: rotate(-45deg);
+  animation: one-x-right 0.3s ease-in-out;
+}
+
+@keyframes one-x-left {
+  from { transform: scale(0) rotate(0deg); }
+  to { transform: scale(1) rotate(45deg); }
+}
+@keyframes one-x-right {
+  from { transform: scale(0) rotate(0deg); }
+  to { transform: scale(1) rotate(-45deg); }
+}
+
+/* ==========================================
+   ICONO ADVERTENCIA (WARNING)
+   ========================================== */
+.one-warning-mark {
+  width: 72px;
+  height: 72px;
+  border: 4px solid #ffbb33;
+  border-radius: 50%;
+  color: #ffbb33;
+  font-size: 48px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  background: rgba(255, 187, 51, 0.05);
+}
+
+/* Responsive para el Alerta */
+@media (max-width: 480px) {
+  .one-feedback-modal-card {
+    max-width: calc(100% - 20px);
+    padding: 24px;
+  }
+}

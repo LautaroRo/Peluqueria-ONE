@@ -1,415 +1,315 @@
-.container{
-display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #0f172a; /* Fondo oscuro pro */
+/* --- 1. RESET Y BASES (COMUNES) --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #000;
+  color: #fff;
   font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
 }
 
-.calendario-card {
-  background: #1e293b;
-  padding: 2rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+.one-landing-main-wrapper {
+  background: #000;
+  min-height: 100vh;
   width: 100%;
-  max-width: 400px;
-  color: white;
+  position: relative;
 }
 
-.calendario-header {
+/* --- 2. NAVBAR --- */
+.one-navbar-landing {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  padding: 16px 5%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #1a1a1a;
+  z-index: 1000;
 }
 
-.mes-titulo {
-  text-transform: capitalize;
-  font-size: 1.2rem;
-  font-weight: 600;
+.one-logo-landing {
+  font-size: 20px;
+  font-weight: 900;
+  font-style: italic;
+  color: #fff;
+  letter-spacing: 2px;
+  margin: 0;
 }
 
-.nav-btn {
-  background: #334155;
-  border: none;
-  color: white;
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background 0.3s;
+.one-nav-actions-landing {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
-.nav-btn:hover {
-  background: #6366f1;
+.one-btn-nav-landing, 
+.one-btn-nav-secondary-landing {
+  color: #fff;
+  text-decoration: none;
+  border: 1px solid #1a1a1a;
+  background: #0d0d0d;
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: inline-block;
+  white-space: nowrap;
 }
 
-.calendario-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+.one-btn-nav-landing:hover,
+.one-btn-nav-secondary-landing:hover {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
 }
 
-.dia-semana-label {
-  text-align: center;
-  font-size: 0.8rem;
-  color: #94a3b8;
-  font-weight: bold;
-  padding-bottom: 10px;
-}
-
-.dia-celda {
-  aspect-ratio: 1;
+/* --- 3. LANDING HERO --- */
+.one-landing-hero {
+  position: relative;
+  height: 100vh;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  border-radius: 10px;
-  transition: all 0.2s;
-  font-size: 0.9rem;
-  border: 1px solid transparent;
-}
-
-.dia-celda:hover {
-  background: #334155;
-  border-color: #6366f1;
-}
-
-.dia-celda.seleccionado {
-  background: #6366f1;
-  color: white;
-  font-weight: bold;
-  transform: scale(1.1);
-}
-
-.dia-vacio {
-  pointer-events: none;
-}
-
-.calendario-footer {
-  margin-top: 2rem;
-  border-top: 1px solid #334155;
-  padding-top: 1.5rem;
   text-align: center;
 }
 
-.info-turno {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.one-landing-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.45;
+  z-index: 1;
 }
 
-.confirm-btn {
-  background: #6366f1;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
+.one-landing-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, #000);
+  z-index: 2;
+}
+
+.one-landing-hero-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90%;
+}
+
+.one-landing-hero-title {
+  font-size: clamp(80px, 15vw, 140px);
+  font-weight: 900;
+  font-style: italic;
+  line-height: 1;
+  margin-top: 25px;    
+  margin-bottom: 25px; 
+}
+
+.one-landing-hero-tag {
+  color: #555;
+  letter-spacing: 5px;
+  font-size: 11px;
   font-weight: bold;
-  margin-top: 10px;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-in-out;
+.one-landing-hero-text {
+  color: #888;
+  letter-spacing: 2px;
+  font-size: 14px;
 }
 
-
-.dia-celda.deshabilitado {
-  color: #475569 !important;
-  background-color: transparent; 
-  cursor: not-allowed;
-  opacity: 0.3; 
-  text-decoration: none; 
-}
-
-
-.dia-celda.deshabilitado:hover {
-  background: transparent !important;
-  color: #475569 !important;
-  border-color: transparent !important;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-
-
-
-.form-detalles {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.back-link {
-  background: none;
-  border: none;
-  color: #818cf8;
+.one-landing-btn-main {
+  color: #000;
+  background: #fff;
+  border: 2px solid #fff;
+  letter-spacing: 2px;
   cursor: pointer;
-  text-align: left;
-  padding: 0;
-  font-size: 0.9rem;
-  margin-bottom: 10px;
-}
-
-.titulo-form {
-  margin: 0;
-  font-size: 1.4rem;
-}
-
-.fecha-form {
-  color: #6366f1;
-  font-weight: bold;
-  margin-bottom: 10px;
-  text-transform: capitalize;
-}
-
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.input-group label {
-  font-size: 0.85rem;
-  color: #94a3b8;
-}
-
-.select-horario, .input-group input {
-  background: #334155;
-  border: 1px solid #475569;
-  padding: 12px;
+  width: fit-content;
+  margin-top: 45px;
+  padding: 18px 50px;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-decoration: none;
   border-radius: 8px;
-  color: white;
-  font-size: 1rem;
-  outline: none;
+  transition: all .3s ease;
+  display: inline-block;
 }
 
-.select-horario:focus, .input-group input:focus {
-  border-color: #6366f1;
+.one-landing-btn-main:hover {
+  background: #000000;
+  color: #ffffff;
+  border-color: #ffffff;
 }
 
-
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+/* --- 4. SECCIÓN HÉCTOR --- */
+.one-landing-section-container { 
+  max-width: 1100px; 
+  margin: 0 auto; 
+  padding: 100px 20px; 
 }
 
-.confirm-btn.final {
-  margin-top: 20px;
-  background: #10b981; 
-}
-
-.confirm-btn.final:hover {
-  background: #059669;
-}
-
-
-
-
-
-@media (max-width: 768px) {
-  .calendario-card {
-    max-width: 90%;
-    padding: 1.5rem;
-  }
-
-  .mes-titulo {
-    font-size: 1rem;
-  }
-
-  .nav-btn {
-    width: 30px;
-    height: 30px;
-  }
-
-  .dia-celda {
-    font-size: 0.8rem;
-  }
-}
-
-
-
-@media (max-width: 480px) {
-  .container {
-    padding: 10px;
-  }
-
-  .calendario-card {
-    max-width: 100%;
-    padding: 1rem;
-    border-radius: 15px;
-  }
-
-  .calendario-header {
-    margin-bottom: 1rem;
-  }
-
-  .mes-titulo {
-    font-size: 0.9rem;
-    text-align: center;
-  }
-
-  .nav-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 0.8rem;
-  }
-
-  .calendario-grid {
-    gap: 5px;
-  }
-
-  .dia-semana-label {
-    font-size: 0.7rem;
-  }
-
-  .dia-celda {
-    font-size: 0.75rem;
-    border-radius: 6px;
-  }
-
-  .dia-celda.seleccionado {
-    transform: scale(1.05); /* menos zoom en mobile */
-  }
-
-  .calendario-footer {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-  }
-
-  .confirm-btn {
-    padding: 12px;
-    font-size: 0.9rem;
-  }
-
-  .titulo-form {
-    font-size: 1.2rem;
-  }
-
-  .fecha-form {
-    font-size: 0.9rem;
-  }
-
-  .select-horario,
-  .input-group input {
-    padding: 10px;
-    font-size: 0.9rem;
-  }
-}
-
-
-@media (max-width: 360px) {
-  .dia-celda {
-    font-size: 0.7rem;
-  }
-
-  .mes-titulo {
-    font-size: 0.8rem;
-  }
-
-  .nav-btn {
-    width: 25px;
-    height: 25px;
-  }
-}
-
-
-
-
-.horarios-carrusel {
+.one-landing-profile-flex {
   display: flex;
-  gap: 10px;
-  overflow-x: auto; 
-  padding: 10px 5px;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin; 
-  scrollbar-color: #6366f1 #1e293b;
+  align-items: center;
+  gap: 60px;
 }
 
-
-.horarios-carrusel::-webkit-scrollbar {
-  height: 5px;
-}
-.horarios-carrusel::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 10px;
+.one-landing-profile-image-wrapper {
+  flex: 1;
+  position: relative;
+  border: 1px solid #222;
 }
 
-.horario-card {
-  flex: 0 0 auto; 
-  background: #334155;
-  border: 1px solid #475569;
-  color: white;
-  padding: 10px 15px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
+.one-landing-profile-img-main {
+  width: 100%;
+  height: 550px;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.1) brightness(0.8);
+  display: block;
+  transition: 0.5s ease;
 }
 
-.horario-card:hover {
-  border-color: #6366f1;
+.one-landing-profile-img-main:hover {
+  filter: grayscale(0) brightness(1);
 }
 
-.horario-card.active {
-  background: #6366f1;
-  border-color: #818cf8;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4);
+.one-landing-experience-badge {
+  position: absolute;
+  bottom: 20px;
+  right: -10px;
+  background: #fff;
+  color: #000;
+  padding: 5px 15px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 1px;
 }
 
-.calendario-card {
-  max-width: 400px;
-  width: 95%; 
+.one-landing-profile-content {
+  flex: 1.2;
 }
 
-.titulo-form {
-  font-size: 1.2rem;
-  margin-top: 5px;
+.one-landing-vertical-line {
+  width: 2px;
+  height: 40px;
+  background: #fff;
+  margin-bottom: 20px;
 }
 
-.input-group label {
-  font-size: 0.8rem;
-  margin-bottom: 5px;
+.one-landing-label {
+  color: #555;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
   display: block;
 }
 
-
-.input-group input {
-  padding: 10px;
-  font-size: 0.9rem;
+.one-landing-profile-name {
+  font-size: clamp(40px, 6vw, 70px);
+  font-weight: 900;
+  line-height: 0.9;
+  margin-bottom: 20px;
+  text-transform: uppercase;
 }
 
-.back-link {
-  font-size: 0.8rem;
-  opacity: 0.8;
-  transition: opacity 0.2s;
+.one-landing-profile-name span {
+  font-style: italic;
+  font-weight: 300;
+  color: rgba(255,255,255,0.4);
 }
 
-.back-link:hover {
-  opacity: 1;
+.one-landing-profile-description p {
+  color: #888;
+  line-height: 1.6;
+  font-size: 16px;
+  max-width: 500px;
 }
 
+/* --- 5. UBICACIÓN Y HORARIOS --- */
+.one-section-black { background: #000; }
+.one-section-dark { background: #050505; }
 
-
-.horario-card.ocupado {
-  background: #1e293b;
-  color: #475569;
-  border-color: #334155;
-  cursor: not-allowed;
-  opacity: 0.5;
-  text-decoration: line-through; /* Opcional, para que sea súper claro */
+.one-landing-location-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  background: #050505;
+  border: 1px solid #111;
+  padding: 40px;
+  gap: 40px;
 }
 
-.horario-card.ocupado:hover {
-  border-color: #ef4444; /* Rojo si intentan pasar el mouse */
+.one-landing-italic-title {
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+}
+
+.one-landing-hour-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #111;
+  color: #888;
+}
+
+.one-map-container {
+  width: 100%;
+}
+
+/* --- 6. OPINIONES --- */
+.one-landing-reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.one-landing-review-card {
+  background: #0a0a0a;
+  padding: 30px;
+  border: 1px solid #151515;
+}
+
+/* --- 7. FOOTER --- */
+.one-footer-landing {
+  text-align: center;
+  padding: 60px;
+  color: #222;
+  font-size: 10px;
+  letter-spacing: 2px;
+  border-top: 1px solid #111;
+}
+
+/* --- 8. RESPONSIVE --- */
+@media (max-width: 768px) {
+  .one-landing-hero-content {
+    gap: 35px; 
+  }
+  .one-landing-hero-title { 
+    font-size: 3.5rem; 
+    margin: 0;
+  }
+  .one-landing-btn-main { 
+    margin-top: 0;
+  }
+  
+  .one-landing-profile-flex {  flex-direction: column-reverse; text-align: center; }
+  .one-landing-profile-image-wrapper { width: 80%; height: 200px; }
+  .one-landing-location-grid { padding: 20px; }
 }

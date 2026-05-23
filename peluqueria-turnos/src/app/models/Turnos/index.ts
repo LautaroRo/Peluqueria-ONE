@@ -1,18 +1,36 @@
 import mongoose from "mongoose";
 
 const TurnoSchema = new mongoose.Schema({
-    Nombre_Cliente: String,
-    Telefono_Cliente: Number,
-    // Borramos o comentamos la línea del DNI para que no lo valide
-    // Dni: Number, 
-    Turno: {
-        Dia: String,
-        Hora: String
-    },
-    Estado: {
+    Nombre_Cliente: {
         type: String,
-        default: "Pending"
+        required: true,
+        trim: true
     },
-}, { timestamps: true });
 
-export default mongoose.models.Turnos || mongoose.model("Turnos", TurnoSchema);
+    Telefono_Cliente: {
+        type: Number,
+        required: true
+    },
+
+    // 🔄 MODIFICADO: Agrupamos Dia, Hora y Estado acá adentro
+    Turno: {
+        Dia: {
+            type: String,
+            required: true
+        },
+        Hora: {
+            type: String,
+            required: true
+        }
+    },
+
+}, {
+    timestamps: true,
+    collection: "turnos"
+});
+
+const Turnos =
+    mongoose.models.Turno ||
+    mongoose.model("Turno", TurnoSchema, "turnos");
+
+export default Turnos;
