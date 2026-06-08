@@ -61,7 +61,17 @@ export default function AdminPage() {
 
   const [vistaActiva, setVistaActiva] = useState<"turnos" | "clientes" | "historial">("turnos");
 
-  // Configuración del calendario (Lógica exacta de tu formulario de reservas)
+  // Estados para las alertas de confirmación y feedback premium
+  const [alertaPremium, setAlertaPremium] = useState({
+    visible: false,
+    titulo: "",
+    mensaje: "",
+    esError: false
+  });
+
+  const [idAEliminar, setIdAEliminar] = useState<string | null>(null);
+
+  // Configuración del calendario
   const hoy = startOfToday();
   const inicioMes = startOfMonth(fechaReferencia);
   const finMes = endOfMonth(fechaReferencia);
@@ -69,7 +79,7 @@ export default function AdminPage() {
   const espaciosVacios = Array.from({ length: getDay(inicioMes) });
   const diasSemana = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-  // Generador de turnos idéntico al tuyo
+  // Generador de horarios
   const horariosDisponibles = [];
   for (let h = 9; h <= 20; h++) {
     horariosDisponibles.push(`${h}:00`, `${h}:30`);
@@ -110,7 +120,6 @@ export default function AdminPage() {
     obtenerDatos();
   }, []);
 
-  // Busca los turnos ocupados cuando el administrador cambia el día elegido en el modal
   useEffect(() => {
     if (seleccion) {
       const buscarOcupados = async () => {
@@ -144,20 +153,40 @@ export default function AdminPage() {
         setTurnoAEditar(null);
         setSeleccion(null);
         setHoraSeleccionada("");
-        obtenerDatos();
+        await obtenerDatos();
+        setAlertaPremium({
+          visible: true,
+          titulo: "¡Turno Modificado!",
+          mensaje: "La cita se ha reprogramado correctamente en la base de datos.",
+          esError: false
+        });
       }
     } catch (error) {
       console.error(error);
     }
   };
 
-  const eliminarTurno = async (id: string) => {
-    if (!confirm("¿Seguro que deseas eliminar este turno?")) return;
+  const requerirEliminacion = (id: string) => {
+    setIdAEliminar(id);
+  };
+
+  const confirmarEliminarTurno = async () => {
+    if (!idAEliminar) return;
     try {
-      const res = await fetch(`/api/turnos?id=${id}`, { method: "DELETE" });
-      if (res.ok) obtenerDatos();
+      const res = await fetch(`/api/turnos?id=${idAEliminar}`, { method: "DELETE" });
+      if (res.ok) {
+        setIdAEliminar(null);
+        await obtenerDatos();
+        setAlertaPremium({
+          visible: true,
+          titulo: "Turno Eliminado",
+          mensaje: "El turno fue removido del sistema con éxito.",
+          esError: false
+        });
+      }
     } catch (error) {
       console.error(error);
+      setIdAEliminar(null);
     }
   };
 
@@ -188,25 +217,25 @@ export default function AdminPage() {
           onClick={() => setVistaActiva("turnos")} 
           className={`switcher-tab-btn ${vistaActiva === "turnos" ? "active" : ""}`}
         >
-          📅 Ver Turnos
+          Ver Turnos
         </button>
         <button 
           onClick={() => setVistaActiva("clientes")} 
           className={`switcher-tab-btn ${vistaActiva === "clientes" ? "active" : ""}`}
         >
-          👥 Ver Clientes
+          Ver Clientes
         </button>
         <button 
           onClick={() => setVistaActiva("historial")} 
           className={`switcher-tab-btn ${vistaActiva === "historial" ? "active" : ""}`}
         >
-          📜 Ver Historial
+          Ver Historial
         </button>
       </div>
 
       <div className="tabla-container">
         {cargando ? (
-          <p>Cargando datos...</p>
+          <p style={{ textAlign: "center", color: "#94a3b8" }}>Cargando datos...</p>
         ) : vistaActiva === "turnos" ? (
           <table className="admin-table">
             <thead>
@@ -221,7 +250,9 @@ export default function AdminPage() {
               {turnos.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="tabla-vacia">
-                    No hay turnos activos en la agenda.
+                    <div className="tabla-vacia-contenedor">
+                      <p className="tabla-vacia-texto">No hay turnos activos en la agenda.</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -242,7 +273,7 @@ export default function AdminPage() {
                             setHoraSeleccionada(t.Turno.Hora);
                           }}
                         >Modificar</button>
-                        <button className="delete-btn" onClick={() => eliminarTurno(t._id)}>Eliminar</button>
+                        <button className="delete-btn" onClick={() => requerirEliminacion(t._id)}>Eliminar</button>
                       </div>
                     </td>
                   </tr>
@@ -264,7 +295,9 @@ export default function AdminPage() {
               {clientes.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="tabla-vacia">
-                    No hay clientes cargados en el sistema.
+                    <div className="tabla-vacia-contenedor">
+                      <p className="tabla-vacia-texto">No hay clientes cargados en el sistema.</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -300,7 +333,9 @@ export default function AdminPage() {
               {historial.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="tabla-vacia">
-                    El historial está vacío.
+                    <div className="tabla-vacia-contenedor">
+                      <p className="tabla-vacia-texto">El historial está vacío.</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -332,13 +367,12 @@ export default function AdminPage() {
         )}
       </div>
 
-      {/* 🛠️ MODAL CON EL CALENDARIO INTERACTIVO Y EL CARRUSEL DEL COMPONENTE RESERVAS */}
+      {/* MODAL CALENDARIO INTERACTIVO */}
       {turnoAEditar && (
-        <div className="modal-overlay" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.75)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, padding: "20px" }}>
-          <div className="calendario-card animate-fade-in" style={{ maxWidth: "450px", width: "100%", margin: 0 }}>
-            
+        <div className="modal-overlay">
+          <div className="calendar-card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-              <h2 className="titulo-form" style={{ margin: 0, fontSize: "1.2rem" }}>Reagendar Turno</h2>
+              <h2 className="month-title" style={{ margin: 0, fontSize: "1.2rem" }}>Reagendar Turno</h2>
               <button onClick={() => setTurnoAEditar(null)} style={{ background: "transparent", border: "none", color: "#888", fontSize: "20px", cursor: "pointer" }}>✕</button>
             </div>
 
@@ -346,22 +380,20 @@ export default function AdminPage() {
               Cliente: <strong style={{ color: "#fff" }}>{turnoAEditar.Nombre_Cliente}</strong>
             </p>
 
-            {/* Cabecera del calendario */}
-            <div className="calendario-header">
-              <button className="nav-btn" onClick={() => setFechaReferencia(subMonths(fechaReferencia, 1))} disabled={format(fechaReferencia, "MM-yyyy") === format(hoy, "MM-yyyy")}> &lt; </button>
-              <h2 className="mes-titulo">{format(fechaReferencia, "MMMM yyyy", { locale: es })}</h2>
-              <button className="nav-btn" onClick={() => setFechaReferencia(addMonths(fechaReferencia, 1))}> &gt; </button>
+            <div className="calendar-nav">
+              <button onClick={() => setFechaReferencia(subMonths(fechaReferencia, 1))} disabled={format(fechaReferencia, "MM-yyyy") === format(hoy, "MM-yyyy")}> &lt; </button>
+              <h2 className="month-title">{format(fechaReferencia, "MMMM yyyy", { locale: es })}</h2>
+              <button onClick={() => setFechaReferencia(addMonths(fechaReferencia, 1))}> &gt; </button>
             </div>
 
-            {/* Grilla interactiva de días */}
-            <div className="calendario-grid">
-              {diasSemana.map((d) => <div key={d} className="dia-semana-label">{d}</div>)}
-              {espaciosVacios.map((_, i) => <div key={i} className="dia-vacio" />)}
+            <div className="calendar-grid">
+              {diasSemana.map((d) => <div key={d} className="weekday-header">{d}</div>)}
+              {espaciosVacios.map((_, i) => <div key={i} className="day-cell disabled" style={{ textDecoration: "none" }} />)}
               {diasDelMes.map((dia) => {
-                const estaBloqueado = isBefore(dia, hoy) || [0, 1].includes(getDay(dia));
+                const estaBloqueado = isBefore(dia, hoy);
                 return (
                   <div key={dia.toString()} 
-                       className={`dia-celda ${seleccion && isSameDay(dia, seleccion) ? "seleccionado" : ""} ${estaBloqueado ? "deshabilitado" : ""}`}
+                       className={`day-cell ${seleccion && isSameDay(dia, seleccion) ? "selected" : ""} ${estaBloqueado ? "disabled" : ""}`}
                        onClick={() => !estaBloqueado && setSeleccion(dia)}>
                     {format(dia, "d")}
                   </div>
@@ -369,15 +401,13 @@ export default function AdminPage() {
               })}
             </div>
 
-            {/* Sección de Horarios con Carrusel */}
             {seleccion && (
-              <div className="form-detalles animate-fade-in" style={{ padding: 0, background: "transparent", marginTop: "20px", border: "none" }}>
-                <p className="fecha-form" style={{ marginBottom: "10px", fontSize: "14px" }}>
+              <div className="time-section">
+                <p style={{ marginBottom: "10px", fontSize: "14px", color: "#888" }}>
                   Día seleccionado: {format(seleccion, "dd 'de' MMMM", { locale: es })}
                 </p>
-
-                <div className="input-group">
-                  <div className="horarios-carrusel">
+                <div className="carousel-wrapper">
+                  <div className="time-carousel">
                     {horariosDisponibles.map((h) => {
                       const estaOcupado = turnosOcupados.includes(h);
                       const esHoy = isSameDay(seleccion, hoy);
@@ -394,8 +424,10 @@ export default function AdminPage() {
                       const deshabilitado = estaOcupado || esHoraPasada;
                       return (
                         <button key={h} type="button" disabled={deshabilitado}
-                          className={`horario-card ${horaSeleccionada === h ? "active" : ""} ${deshabilitado ? "ocupado" : ""}`}
-                          onClick={() => !deshabilitado && setHoraSeleccionada(h)}> {h} </button>
+                          className={`time-item ${horaSeleccionada === h ? "selected" : ""} ${deshabilitado ? "occupied" : ""}`}
+                          onClick={() => !deshabilitado && setHoraSeleccionada(h)}> 
+                          {h} 
+                        </button>
                       );
                     })}
                   </div>
@@ -403,21 +435,60 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Footer con el botón de confirmación final */}
-            <div style={{ marginTop: "25px", borderTop: "1px solid #222", paddingTop: "20px", display: "flex", gap: "10px" }}>
-              <button onClick={() => setTurnoAEditar(null)} className="confirm-btn" style={{ background: "#333", margin: 0, flex: 1 }}>
+            <div className="modal-footer">
+              <button onClick={() => setTurnoAEditar(null)} className="cancel-btn">
                 CANCELAR
               </button>
               <button 
                 onClick={guardarCambios} 
-                className="confirm-btn final" 
+                className="confirm-btn" 
                 disabled={!seleccion || !horaSeleccionada}
-                style={{ margin: 0, flex: 2 }}
               >
                 {horaSeleccionada ? `GUARDAR (${horaSeleccionada} HS)` : "ELEGÍ UN HORARIO"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
 
+      {/* MODAL ELIMINAR */}
+      {idAEliminar && (
+        <div className="one-modal-overlay">
+          <div className="one-modal-card">
+            <div className="one-modal-icon-wrapper">
+              <span style={{ fontSize: "50px" }}>⚠️</span>
+            </div>
+            <h3 className="one-modal-title">¿Eliminar Turno?</h3>
+            <p className="one-modal-text">Esta acción removerá permanentemente la reserva seleccionada del panel de control.</p>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button className="one-modal-btn" style={{ background: "#1a1a1a", color: "#555", borderColor: "#1a1a1a" }} onClick={() => setIdAEliminar(null)}>
+                VOLVER
+              </button>
+              <button className="one-modal-btn" style={{ background: "#ef4444", color: "#fff", borderColor: "#ef4444" }} onClick={confirmarEliminarTurno}>
+                SÍ, ELIMINAR
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL ALERTA FEEDBACK */}
+      {alertaPremium.visible && (
+        <div className="one-modal-overlay">
+          <div className="one-modal-card">
+            <div className="one-modal-icon-wrapper">
+              <div className="one-modal-checkmark-success">
+                <span className="checkmark-icon-badge">✓</span>
+              </div>
+            </div>
+            <h3 className="one-modal-title">{alertaPremium.titulo}</h3>
+            <p className="one-modal-text">{alertaPremium.mensaje}</p>
+            <button 
+              className="one-modal-btn" 
+              onClick={() => setAlertaPremium({ visible: false, titulo: "", mensaje: "", esError: false })}
+            >
+              ENTENDIDO
+            </button>
           </div>
         </div>
       )}

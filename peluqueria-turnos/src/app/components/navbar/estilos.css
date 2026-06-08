@@ -1,0 +1,53 @@
+/* --- 2. NAVBAR (SIN CAMBIOS) --- */
+.one-navbar-landing {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 5%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #1a1a1a;
+  z-index: 1000;
+}
+
+.one-logo-landing {
+  font-size: 20px;
+  font-weight: 900;
+  font-style: italic;
+  color: #fff;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.one-nav-actions-landing {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.one-btn-nav-landing, 
+.one-btn-nav-secondary-landing {
+  color: #fff;
+  text-decoration: none;
+  border: 1px solid #1a1a1a;
+  background: #0d0d0d;
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.one-btn-nav-landing:hover,
+.one-btn-nav-secondary-landing:hover {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}

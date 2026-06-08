@@ -1,4 +1,4 @@
-/* --- 1. RESET Y BASES (COMUNES) --- */
+/* --- 1. RESET Y BASES --- */
 * {
   margin: 0;
   padding: 0;
@@ -19,61 +19,7 @@ body {
   position: relative;
 }
 
-/* --- 2. NAVBAR --- */
-.one-navbar-landing {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 5%;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid #1a1a1a;
-  z-index: 1000;
-}
-
-.one-logo-landing {
-  font-size: 20px;
-  font-weight: 900;
-  font-style: italic;
-  color: #fff;
-  letter-spacing: 2px;
-  margin: 0;
-}
-
-.one-nav-actions-landing {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.one-btn-nav-landing, 
-.one-btn-nav-secondary-landing {
-  color: #fff;
-  text-decoration: none;
-  border: 1px solid #1a1a1a;
-  background: #0d0d0d;
-  padding: 8px 16px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  display: inline-block;
-  white-space: nowrap;
-}
-
-.one-btn-nav-landing:hover,
-.one-btn-nav-secondary-landing:hover {
-  background: #fff;
-  color: #000;
-  border-color: #fff;
-}
-
-/* --- 3. LANDING HERO --- */
+/* --- 2. LANDING HERO --- */
 .one-landing-hero {
   position: relative;
   height: 100vh;
@@ -155,7 +101,7 @@ body {
   border-color: #ffffff;
 }
 
-/* --- 4. SECCIÓN HÉCTOR --- */
+/* --- 3. SECCIÓN HÉCTOR --- */
 .one-landing-section-container { 
   max-width: 1100px; 
   margin: 0 auto; 
@@ -241,7 +187,7 @@ body {
   max-width: 500px;
 }
 
-/* --- 5. UBICACIÓN Y HORARIOS --- */
+/* --- 4. UBICACIÓN Y HORARIOS --- */
 .one-section-black { background: #000; }
 .one-section-dark { background: #050505; }
 
@@ -273,7 +219,7 @@ body {
   width: 100%;
 }
 
-/* --- 6. OPINIONES --- */
+/* --- 5. OPINIONES --- */
 .one-landing-reviews-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -286,17 +232,7 @@ body {
   border: 1px solid #151515;
 }
 
-/* --- 7. FOOTER --- */
-.one-footer-landing {
-  text-align: center;
-  padding: 60px;
-  color: #222;
-  font-size: 10px;
-  letter-spacing: 2px;
-  border-top: 1px solid #111;
-}
-
-/* --- 8. RESPONSIVE --- */
+/* --- 6. RESPONSIVE --- */
 @media (max-width: 768px) {
   .one-landing-hero-content {
     gap: 35px; 
@@ -309,7 +245,15 @@ body {
     margin-top: 0;
   }
   
-  .one-landing-profile-flex {  flex-direction: column-reverse; text-align: center; }
-  .one-landing-profile-image-wrapper { width: 80%; height: 200px; }
-  .one-landing-location-grid { padding: 20px; }
+  .one-landing-profile-flex { 
+    flex-direction: column-reverse; 
+    text-align: center; 
+  }
+  .one-landing-profile-image-wrapper { 
+    width: 80%; 
+    height: 200px; 
+  }
+  .one-landing-location-grid { 
+    padding: 20px; 
+  }
 }

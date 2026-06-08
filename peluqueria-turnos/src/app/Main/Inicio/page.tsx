@@ -1,22 +1,14 @@
 "use client";
 import Link from "next/link";
 import "./estilos.css";
+import Footer from "../../components/footer";
+import Navbar from "../../components/navbar";
 
 export default function Inicio() {
   return (
     <div className="one-landing-main-wrapper">
       {/* 1. NAVBAR */}
-      <nav className="one-navbar-landing">
-        <h2 className="one-logo-landing">ONE</h2>
-        <div className="one-nav-actions-landing">
-          <Link href="/consultar" className="one-btn-nav-secondary-landing">
-            MI TURNO
-          </Link>
-          <Link href="/reservar" className="one-btn-nav-landing">
-            RESERVAR TURNO
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* 2. INICIO (HERO) */}
       <header className="one-landing-hero">
@@ -77,7 +69,7 @@ export default function Inicio() {
 
               <div className="one-map-container">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3407.132801265842!2d-64.2546454!3d-31.3553259!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x943299388f8d5e87%3A0x6b847f874ded26d8!2sHeriberto%20Mart%C3%ADnez%206814%2C%20X5000%20C%C3%B3rdoba!5e0!3m2!1ses-419!2sar!4v1713245000000!5m2!1ses-419!2sar"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3407.123456789012!2d-64.253456!3d-31.345678!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzHCsDIwJzQ0LjQiUyA2NMKwMTUnMTIuNCJX!5e0!3m2!1ses-419!2sar!4v1710000000000!5m2!1ses-419!2sar"
                   width="100%"
                   height="300"
                   style={{ border: 0, filter: 'grayscale(1) invert(0.9)' }}
@@ -137,9 +129,7 @@ export default function Inicio() {
       </section>
 
       {/* 6. FOOTER */}
-      <footer className="one-footer-landing">
-        <p>© {new Date().getFullYear()} ONE PELUQUERÍA — DESIGNED BY LAUTI</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

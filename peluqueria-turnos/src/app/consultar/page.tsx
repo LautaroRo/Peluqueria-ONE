@@ -3,15 +3,21 @@ import { useState } from "react";
 import { format, isValid, differenceInHours } from "date-fns";
 import { es } from "date-fns/locale";
 import Link from "next/link";
+import Footer from "../components/footer";
 import "./estilos.css";
+import Navbar from "../components/navbar";
 
 export default function ConsultarTurno() {
   const [telefono, setTelefono] = useState("");
-  const [turno, setTurno] = useState<any>(null);
+  const [turno, setTurno] = useState(null);
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
+  
+  // Estados para modales personalizados
+  const [confirmarEliminar, setConfirmarEliminar] = useState(false);
+  const [mostrarModalExito, setMostrarModalExito] = useState(false);
 
-  const buscarTurno = async (e: any) => {
+  const buscarTurno = async (e) => {
     if (e) e.preventDefault();
     if (!telefono) {
       setError("Meté un número primero.");
@@ -40,26 +46,23 @@ export default function ConsultarTurno() {
     }
   };
 
-  const eliminarTurno = async () => {
+  const solicitarCancelacion = () => {
     if (!esEditable()) {
       alert("No podés cancelar turnos con menos de 8 horas de anticipación.");
       return;
     }
+    setConfirmarEliminar(true);
+  };
 
-    const confirmar = window.confirm(
-      "¿Estás seguro de que querés cancelar tu turno?",
-    );
-    if (!confirmar) return;
-
+  const ejecutarEliminacion = async () => {
+    setConfirmarEliminar(false);
     setCargando(true);
     try {
       const res = await fetch(`/api/turnos?id=${turno._id}&accion=Cancelled`, {
         method: "DELETE",
       });
       if (res.ok) {
-        alert("Turno cancelado correctamente.");
-        setTurno(null);
-        setTelefono("");
+        setMostrarModalExito(true);
       } else {
         alert("Hubo un problema al cancelar.");
       }
@@ -68,6 +71,12 @@ export default function ConsultarTurno() {
     } finally {
       setCargando(false);
     }
+  };
+
+  const cerrarModalExito = () => {
+    setMostrarModalExito(false);
+    setTurno(null);
+    setTelefono("");
   };
 
   const esEditable = () => {
@@ -98,19 +107,61 @@ export default function ConsultarTurno() {
 
   return (
     <div className="one-main-wrapper">
-      <nav className="one-navbar-consultar">
-        <Link href="/" className="one-logo-link">
-          <h2 className="one-logo-consultar">ONE</h2>
-        </Link>
-        <div className="one-nav-actions">
-          <Link href="/reservar" className="one-btn-nav-consultar">
-            RESERVAR
-          </Link>
-          <Link href="/" className="one-btn-nav-consultar">
-            INICIO
-          </Link>
+      
+      {/* 1. MODAL PREMIUM DE CONFIRMACIÓN */}
+      {confirmarEliminar && (
+        <div className="one-modal-overlay">
+          <div className="one-modal-card one-modal-critical">
+            <div className="one-modal-icon-wrapper">
+              <div className="one-modal-icon-warning">⚠️</div>
+            </div>
+            <h3 className="one-modal-title">¿Eliminar Turno?</h3>
+            <p className="one-modal-text">
+              Esta acción removerá permanentemente la reserva seleccionada del panel de control.
+            </p>
+            <div className="one-modal-actions-row">
+              <button
+                onClick={() => setConfirmarEliminar(false)}
+                className="one-btn-modal-back"
+              >
+                VOLVER
+              </button>
+              <button
+                onClick={ejecutarEliminacion}
+                className="one-btn-modal-confirm-delete"
+              >
+                SÍ, ELIMINAR
+              </button>
+            </div>
+          </div>
         </div>
-      </nav>
+      )}
+
+      {/* 2. MODAL PREMIUM DE ÉXITO */}
+      {mostrarModalExito && (
+        <div className="one-modal-overlay">
+          <div className="one-modal-card">
+            <div className="one-modal-icon-wrapper">
+              <div className="one-modal-checkmark-success">
+                <span className="checkmark-icon-badge">✓</span>
+              </div>
+            </div>
+            <h3 className="one-modal-title">Turno Cancelado</h3>
+            <p className="one-modal-text">
+              Tu reserva fue dada de baja correctamente. ¡Te esperamos la próxima!
+            </p>
+            <button
+              onClick={cerrarModalExito}
+              className="one-btn-form-main"
+              style={{ width: "100%", padding: "12px" }}
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
+
+      <Navbar/>
 
       <div className="one-container-consultar">
         <h2 className="one-main-title">
@@ -144,7 +195,7 @@ export default function ConsultarTurno() {
             <button
               type="button"
               onClick={buscarTurno}
-              className="one-btn-form-main"
+              className="one-btn-buscar-reserva"
               disabled={cargando}
             >
               {cargando ? "BUSCANDO..." : "BUSCAR RESERVA"}
@@ -167,7 +218,7 @@ export default function ConsultarTurno() {
                 style={{
                   color: "#ff4444",
                   fontSize: "12px",
-                  marginTop: "15px",
+                  marginTop: "5px",
                   fontWeight: "600",
                   textAlign: "center",
                 }}
@@ -180,28 +231,28 @@ export default function ConsultarTurno() {
             <div className="one-acciones-container">
               {editable ? (
                 <Link
-                  href={`/reservar?edit=${turno._id}&nombre=${encodeURIComponent(turno.Nombre_Cliente)}&tel=${turno.Telefono_Cliente}`}
-                  className="one-btn-form-main one-btn-block"
+                  href={`/reservar?edit={turno._id}&nombre={encodeURIComponent(turno.Nombre_Cliente)}&tel={turno.Telefono_Cliente}`}
+                  className="one-btn-form-main"
                 >
-                  MODIFICAR TURNO
+                  Modificar
                 </Link>
               ) : (
                 <button
-                  className="one-btn-form-main one-btn-block"
-                  style={{ opacity: 0.5, cursor: "not-allowed" }}
+                  className="one-btn-form-main"
+                  style={{ opacity: 0.4, cursor: "not-allowed" }}
                   disabled
                 >
-                  MODIFICACIÓN BLOQUEADA
+                  Bloqueado
                 </button>
               )}
 
               <button
-                onClick={eliminarTurno}
+                onClick={solicitarCancelacion}
                 className="one-btn-cancelar"
                 disabled={cargando || !editable}
-                style={!editable ? { opacity: 0.5, cursor: "not-allowed" } : {}}
+                style={!editable ? { opacity: 0.4, cursor: "not-allowed" } : {}}
               >
-                {cargando ? "CANCELANDO..." : "CANCELAR TURNO"}
+                {cargando ? "CANCELANDO..." : "Cancelar"}
               </button>
             </div>
 
@@ -209,6 +260,7 @@ export default function ConsultarTurno() {
               onClick={() => {
                 setTurno(null);
                 setError("");
+                setTelefono("");
               }}
               className="one-btn-volver-simple"
             >
@@ -217,6 +269,7 @@ export default function ConsultarTurno() {
           </div>
         )}
       </div>
+      <Footer/>
     </div>
   );
 }

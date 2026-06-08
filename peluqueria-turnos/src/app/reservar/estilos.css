@@ -1,11 +1,24 @@
-/* ==========================================
-   ONES PELUQUERÍA — ESTILOS GLOBALES
-   ========================================== */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.one-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-align: center;
+  margin: 40px 0 20px 0;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.one-title span {
+  color: #666666;
+  font-style: italic;
+  font-weight: 400;
 }
 
 .one-container {
@@ -16,11 +29,10 @@
   min-height: 100vh;
   background-color: #000000;
   color: #ffffff;
-  padding-top: 80px; /* Evita que la navbar tape la tarjeta */
+  padding-top: 80px;
 }
 
-/* Animaciones */
-.one-animate-fade-in, .one-fade-in {
+.one-animate-fade-in {
   animation: one-fadeIn 0.4s ease-out forwards;
 }
 
@@ -29,54 +41,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ==========================================
-   NAVBAR FIXED
-   ========================================== */
-.one-navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  padding: 16px 5%;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid #1a1a1a;
-  z-index: 1000;
-  gap: 12px; /* Espaciado entre los botones cuando se junten */
-}
-
-.one-logo {
-  margin-right: auto; 
-  font-size: 20px;
-  font-weight: 900;
-  font-style: italic;
-  color: #ffffff;
-  letter-spacing: 2px;
-}
-
-.one-btn-nav {
-  color: #ffffff;
-  text-decoration: none;
-  border: 1px solid #1a1a1a;
-  background: #0d0d0d;
-  padding: 8px 16px;
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.one-btn-nav:hover {
-  background: #ffffff;
-  color: #000000;
-  border-color: #ffffff;
-}
-
-/* ==========================================
-   TARJETA DEL CALENDARIO & FORMULARIO
-   ========================================== */
 .one-calendario-card {
   background: #0a0a0a;
   border: 1px solid #1a1a1a;
@@ -85,8 +49,7 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
   width: 100%;
   max-width: 420px;
-  margin: auto 20px; /* Centrado vertical perfecto en la pantalla */
-  box-sizing: border-box;
+  margin: auto 20px;
 }
 
 .one-calendario-header {
@@ -126,7 +89,6 @@
   cursor: not-allowed;
 }
 
-/* Grilla del Mes */
 .one-calendario-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -140,10 +102,6 @@
   font-weight: bold;
   padding-bottom: 10px;
   text-transform: uppercase;
-}
-
-.one-dia-vacio {
-  pointer-events: none;
 }
 
 .one-dia-celda {
@@ -180,7 +138,6 @@
   text-decoration-color: #444444;
 }
 
-/* Footer de la tarjeta */
 .one-calendario-footer {
   margin-top: 2rem;
   border-top: 1px solid #1a1a1a;
@@ -209,7 +166,6 @@
   text-transform: capitalize;
 }
 
-/* Botones de Acción Estilo Minimalista */
 .one-confirm-btn {
   background: #ffffff;
   color: #000000;
@@ -239,9 +195,6 @@
   margin-top: 15px;
 }
 
-/* ==========================================
-   FORMULARIO DE DETALLES Y INPUTS
-   ========================================== */
 .one-form-detalles {
   display: flex;
   flex-direction: column;
@@ -299,7 +252,6 @@
   font-size: 14px;
   outline: none;
   width: 100%;
-  box-sizing: border-box;
   transition: border-color 0.2s;
 }
 
@@ -307,14 +259,12 @@
   border-color: #ffffff;
 }
 
-/* Ocultar flechitas de input number */
 .one-input-group input[type=number]::-webkit-inner-spin-button, 
 .one-input-group input[type=number]::-webkit-outer-spin-button { 
   -webkit-appearance: none; 
   margin: 0; 
 }
 
-/* Carrusel Horizontal Deslizable */
 .one-horarios-carrusel {
   display: flex;
   gap: 10px;
@@ -322,7 +272,7 @@
   padding: 5px 2px 15px 2px;
   scrollbar-width: thin;
   scrollbar-color: #333333 #0a0a0a;
-  -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
 .one-horarios-carrusel::-webkit-scrollbar {
@@ -366,84 +316,6 @@
   text-decoration: line-through;
 }
 
-/* ==========================================
-   FOOTER
-   ========================================== */
-.one-footer-one {
-  padding: 40px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  margin-top: auto;
-  width: 100%;
-}
-
-.one-footer-container {
-  width: 90%;
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.one-footer-credits {
-  color: #444444;
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-/* ==========================================
-   MEDIA QUERIES (RESPONSIVE SEGURO)
-   ========================================== */
-@media (max-width: 480px) {
-  .one-navbar {
-    padding: 16px 20px;
-  }
-
-  .one-calendario-card {
-    max-width: calc(100% - 30px);
-    padding: 1.5rem;
-    border-radius: 16px;
-  }
-
-  .one-mes-titulo {
-    font-size: 1.1rem;
-  }
-
-  .one-calendario-grid {
-    gap: 6px;
-  }
-
-  .one-dia-celda {
-    font-size: 13px;
-    border-radius: 8px;
-  }
-
-  .one-titulo-form {
-    font-size: 1.25rem;
-  }
-
-  .one-input-group input {
-    padding: 12px;
-    font-size: 13px;
-  }
-
-  .one-footer-one {
-    padding: 30px 0;
-  }
-
-  .one-footer-credits {
-    font-size: 9px;
-    text-align: center;
-    letter-spacing: 1px;
-  }
-}
-
-/* ==========================================
-   ESTILOS DEL MODAL DE FEEDBACK (ALERT LINDO)
-   ========================================== */
 .one-feedback-modal-overlay {
   position: fixed;
   top: 0;
@@ -468,7 +340,6 @@
   max-width: 360px;
   text-align: center;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-  box-sizing: border-box;
 }
 
 .one-animate-pop-in {
@@ -506,7 +377,6 @@
   background: #e5e5e5;
 }
 
-/* Container de iconos */
 .one-icon-wrapper {
   display: flex;
   justify-content: center;
@@ -515,9 +385,6 @@
   margin-bottom: 10px;
 }
 
-/* ==========================================
-   ANIMACIÓN DEL TICK (SUCCESS) estilo premium
-   ========================================== */
 .one-success-checkmark {
   width: 80px;
   height: 80px;
@@ -528,16 +395,7 @@
   height: 80px;
   position: relative;
   border-radius: 50%;
-  box-sizing: content-box;
   border: 4px solid #00c851;
-}
-
-.one-success-checkmark .one-check-icon::before, 
-.one-success-checkmark .one-check-icon::after {
-  content: '';
-  position: absolute;
-  background: #0a0a0a;
-  z-index: 1;
 }
 
 .one-success-checkmark .one-check-icon .one-icon-line {
@@ -574,7 +432,6 @@
   left: -4px;
   top: -4px;
   z-index: 2;
-  box-sizing: content-box;
 }
 
 @keyframes one-icon-line-tip {
@@ -592,9 +449,6 @@
   100% { width: 47px; right: 10px; top: 38px; }
 }
 
-/* ==========================================
-   ANIMACIÓN DE LA X (ERROR)
-   ========================================== */
 .one-error-xmark {
   width: 80px;
   height: 80px;
@@ -639,9 +493,6 @@
   to { transform: scale(1) rotate(-45deg); }
 }
 
-/* ==========================================
-   ICONO ADVERTENCIA (WARNING)
-   ========================================== */
 .one-warning-mark {
   width: 72px;
   height: 72px;
@@ -657,8 +508,36 @@
   background: rgba(255, 187, 51, 0.05);
 }
 
-/* Responsive para el Alerta */
+/* Responsive */
 @media (max-width: 480px) {
+  .one-calendario-card {
+    max-width: calc(100% - 30px);
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+
+  .one-mes-titulo {
+    font-size: 1.1rem;
+  }
+
+  .one-calendario-grid {
+    gap: 6px;
+  }
+
+  .one-dia-celda {
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  .one-titulo-form {
+    font-size: 1.25rem;
+  }
+
+  .one-input-group input {
+    padding: 12px;
+    font-size: 16px !important; /* Mantiene el tamaño para evitar zoom en iOS */
+  }
+
   .one-feedback-modal-card {
     max-width: calc(100% - 20px);
     padding: 24px;
