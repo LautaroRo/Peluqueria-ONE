@@ -407,108 +407,91 @@
   z-index: 10;
 }
 
+
 .one-success-checkmark .one-check-icon .one-icon-line.one-line-tip {
-  width: 25px;
+  width: 20px;
   left: 14px;
   top: 46px;
   transform: rotate(45deg);
-  animation: one-icon-line-tip 0.75s;
+  animation: one-icon-line-tip 0.75s ease forwards;
 }
 
+
 .one-success-checkmark .one-check-icon .one-icon-line.one-line-long {
-  width: 47px;
+  width: 39px;
   right: 10px;
   top: 38px;
   transform: rotate(-45deg);
-  animation: one-icon-line-long 0.75s;
+  animation: one-icon-line-long 0.75s ease forwards;
 }
 
-.one-success-checkmark .one-check-icon .one-icon-circle {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: 4px solid rgba(0, 200, 81, 0.2);
-  position: absolute;
-  left: -4px;
-  top: -4px;
-  z-index: 2;
-}
 
-@keyframes one-icon-line-tip {
-  0% { width: 0; left: 1px; top: 19px; }
-  54% { width: 0; left: 1px; top: 19px; }
-  70% { width: 5px; left: 14px; top: 37px; }
-  84% { width: 17px; left: 14px; top: 48px; }
-  100% { width: 25px; left: 14px; top: 46px; }
-}
 
-@keyframes one-icon-line-long {
-  0% { width: 0; right: 46px; top: 54px; }
-  65% { width: 0; right: 46px; top: 54px; }
-  84% { width: 38px; right: 21px; top: 33px; }
-  100% { width: 47px; right: 10px; top: 38px; }
-}
-
+/* --- ESTADO: ERROR (X) --- */
 .one-error-xmark {
-  width: 80px;
-  height: 80px;
-  border: 4px solid #ff4444;
+  width: 70px; /* Unificado con el tamaño del check */
+  height: 70px; /* Unificado con el tamaño del check */
+  border: 3px solid #ff4444;
   border-radius: 50%;
   position: relative;
   background: rgba(255, 68, 68, 0.05);
+  margin: 20px auto;
 }
 
 .one-error-xmark .one-x-icon {
   position: relative;
-  height: 80px;
+  height: 100%;
 }
 
 .one-error-xmark .one-x-line {
   display: block;
-  height: 5px;
-  width: 40px;
+  height: 3px;
+  width: 34px;
   background-color: #ff4444;
-  border-radius: 2px;
+  border-radius: 999px;
   position: absolute;
-  top: 34px;
-  left: 16px;
+  top: 31px;
+  left: 15px;
 }
 
 .one-error-xmark .one-x-line.one-line-left {
   transform: rotate(45deg);
-  animation: one-x-left 0.3s ease-in-out;
+  animation: one-x-left 0.3s ease-in-out forwards;
 }
 
 .one-error-xmark .one-x-line.one-line-right {
   transform: rotate(-45deg);
-  animation: one-x-right 0.3s ease-in-out;
+  animation: one-x-right 0.3s ease-in-out forwards;
 }
 
 @keyframes one-x-left {
   from { transform: scale(0) rotate(0deg); }
   to { transform: scale(1) rotate(45deg); }
 }
+
 @keyframes one-x-right {
   from { transform: scale(0) rotate(0deg); }
   to { transform: scale(1) rotate(-45deg); }
 }
 
+/* --- ESTADO: ADVERTENCIA (!) --- */
 .one-warning-mark {
-  width: 72px;
-  height: 72px;
-  border: 4px solid #ffbb33;
+  width: 70px; /* Unificado con el tamaño del check */
+  height: 70px; /* Unificado con el tamaño del check */
+  border: 3px solid #ffbb33;
   border-radius: 50%;
   color: #ffbb33;
-  font-size: 48px;
+  font-size: 42px;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
   background: rgba(255, 187, 51, 0.05);
+  margin: 20px auto;
 }
 
-/* Responsive */
+/* --- RESPONSIVE --- */
 @media (max-width: 480px) {
   .one-calendario-card {
     max-width: calc(100% - 30px);
@@ -535,7 +518,7 @@
 
   .one-input-group input {
     padding: 12px;
-    font-size: 16px !important; /* Mantiene el tamaño para evitar zoom en iOS */
+    font-size: 16px !important;
   }
 
   .one-feedback-modal-card {
