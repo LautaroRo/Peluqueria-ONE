@@ -231,7 +231,7 @@ export default function ConsultarTurno() {
             <div className="one-acciones-container">
               {editable ? (
                 <Link
-                  href={`/reservar?edit={turno._id}&nombre={encodeURIComponent(turno.Nombre_Cliente)}&tel={turno.Telefono_Cliente}`}
+                  href={`/reservar?edit=${turno._id}&nombre=${encodeURIComponent(turno.Nombre_Cliente)}&tel=${turno.Telefono_Cliente}`}
                   className="one-btn-form-main"
                 >
                   Modificar

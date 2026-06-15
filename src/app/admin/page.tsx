@@ -406,6 +406,7 @@ export default function AdminPage() {
                 <p style={{ marginBottom: "10px", fontSize: "14px", color: "#888" }}>
                   Día seleccionado: {format(seleccion, "dd 'de' MMMM", { locale: es })}
                 </p>
+                {/* Contenedor wrapper añadido para dar soporte y espacio a la scrollbar */}
                 <div className="carousel-wrapper">
                   <div className="time-carousel">
                     {horariosDisponibles.map((h) => {
@@ -459,12 +460,16 @@ export default function AdminPage() {
               <span style={{ fontSize: "50px" }}>⚠️</span>
             </div>
             <h3 className="one-modal-title">¿Eliminar Turno?</h3>
-            <p className="one-modal-text">Esta acción removerá permanentemente la reserva seleccionada del panel de control.</p>
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button className="one-modal-btn" style={{ background: "#1a1a1a", color: "#555", borderColor: "#1a1a1a" }} onClick={() => setIdAEliminar(null)}>
+            <p className="one-modal-text">
+              Esta acción removerá permanentemente la reserva seleccionada del panel de control.
+            </p>
+            
+            {/* Contenedor de botones centrado */}
+            <div className="one-modal-btn-container">
+              <button className="one-modal-btn btn-volver" onClick={() => setIdAEliminar(null)}>
                 VOLVER
               </button>
-              <button className="one-modal-btn" style={{ background: "#ef4444", color: "#fff", borderColor: "#ef4444" }} onClick={confirmarEliminarTurno}>
+              <button className="one-modal-btn btn-confirmar-eliminar" onClick={confirmarEliminarTurno}>
                 SÍ, ELIMINAR
               </button>
             </div>
