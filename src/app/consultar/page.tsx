@@ -7,9 +7,20 @@ import Footer from "../components/footer";
 import "./estilos.css";
 import Navbar from "../components/navbar";
 
+// 1. Interfaz para TypeScript
+interface TurnoData {
+  _id: string;
+  Nombre_Cliente: string;
+  Telefono_Cliente: string;
+  Turno: {
+    Dia: string;
+    Hora: string;
+  };
+}
+
 export default function ConsultarTurno() {
   const [telefono, setTelefono] = useState("");
-  const [turno, setTurno] = useState(null);
+  const [turno, setTurno] = useState<TurnoData | null>(null);
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   
@@ -17,7 +28,8 @@ export default function ConsultarTurno() {
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [mostrarModalExito, setMostrarModalExito] = useState(false);
 
-  const buscarTurno = async (e) => {
+  // Agregamos que 'e' pueda ser un FormEvent o null para llamarlo desde el onClick
+  const buscarTurno = async (e: React.FormEvent | null) => {
     if (e) e.preventDefault();
     if (!telefono) {
       setError("Meté un número primero.");
@@ -55,6 +67,8 @@ export default function ConsultarTurno() {
   };
 
   const ejecutarEliminacion = async () => {
+    if (!turno) return; 
+    
     setConfirmarEliminar(false);
     setCargando(true);
     try {
@@ -80,7 +94,8 @@ export default function ConsultarTurno() {
   };
 
   const esEditable = () => {
-    if (!turno?.Turno?.Dia || !turno?.Turno?.Hora) return false;
+    // Si no hay turno o faltan datos, frena acá
+    if (!turno || !turno.Turno?.Dia || !turno.Turno?.Hora) return false;
 
     const [year, month, day] = turno.Turno.Dia.split("-").map(Number);
     const [hour, minute] = turno.Turno.Hora.split(":").map(Number);
@@ -93,7 +108,8 @@ export default function ConsultarTurno() {
   };
 
   const obtenerFechaFormateada = () => {
-    if (!turno?.Turno?.Dia) return "";
+    // Si no hay turno o falta el día, frena acá
+    if (!turno || !turno.Turno?.Dia) return "";
 
     const [year, month, day] = turno.Turno.Dia.split("-").map(Number);
     const fecha = new Date(year, month - 1, day);
@@ -108,7 +124,7 @@ export default function ConsultarTurno() {
   return (
     <div className="one-main-wrapper">
       
-      {/* 1. MODAL PREMIUM DE CONFIRMACIÓN */}
+      {/* 1. MODAL DE CONFIRMACIÓN */}
       {confirmarEliminar && (
         <div className="one-modal-overlay">
           <div className="one-modal-card one-modal-critical">
@@ -137,7 +153,7 @@ export default function ConsultarTurno() {
         </div>
       )}
 
-      {/* 2. MODAL PREMIUM DE ÉXITO */}
+      {/* 2. MODAL DE ÉXITO */}
       {mostrarModalExito && (
         <div className="one-modal-overlay">
           <div className="one-modal-card">
@@ -194,7 +210,7 @@ export default function ConsultarTurno() {
             )}
             <button
               type="button"
-              onClick={buscarTurno}
+              onClick={() => buscarTurno(null)}
               className="one-btn-buscar-reserva"
               disabled={cargando}
             >
