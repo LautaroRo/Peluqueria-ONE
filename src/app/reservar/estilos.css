@@ -37,6 +37,10 @@
   transition: background 0.3s, color 0.3s;
 }
 
+.paso-chip em {
+  font-style: normal;
+}
+
 .paso-chip.actual {
   border-color: var(--blanco);
   color: var(--blanco);
@@ -165,6 +169,109 @@
   animation: subir 0.4s var(--ease);
 }
 
+/* --- Servicios --- */
+.reserva-subtitulo {
+  margin-bottom: 16px;
+}
+
+.servicios-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.servicio-opcion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 74px;
+  padding: 16px 18px;
+  text-align: left;
+  background: var(--grafito);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: 12px;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.25s var(--ease);
+  animation: subir 0.4s var(--ease) both;
+}
+
+.servicio-opcion:hover:not(.activo) {
+  border-color: var(--blanco);
+  transform: translateX(4px);
+}
+
+.servicio-opcion.activo {
+  background: var(--blanco);
+  color: var(--negro);
+  border-color: var(--blanco);
+}
+
+.servicio-opcion-texto,
+.servicio-opcion-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.servicio-opcion-texto strong {
+  font-size: 1.05rem;
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.servicio-opcion small {
+  color: var(--gris);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.servicio-opcion.activo small {
+  color: #444;
+}
+
+.servicio-opcion-meta {
+  flex-shrink: 0;
+  align-items: flex-end;
+  font-variant-numeric: tabular-nums;
+}
+
+.servicio-opcion-meta b {
+  font-weight: 900;
+}
+
+.servicio-opcion.esqueleto {
+  display: block;
+  border-color: transparent;
+  background: linear-gradient(90deg, #0d0d0d 0%, #1a1a1a 50%, #0d0d0d 100%);
+  background-size: 200% 100%;
+  animation: brillo 1.2s linear infinite;
+}
+
+.reserva-nota,
+.reserva-politica {
+  margin-bottom: 18px;
+  color: var(--gris);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.reserva-politica {
+  margin: 4px 0 0;
+}
+
+.reserva-politica strong {
+  color: var(--blanco);
+}
+
+.resumen-precio {
+  display: block;
+  margin-top: 2px;
+  color: var(--gris);
+  font-style: normal;
+  font-weight: 700;
+}
+
 .modal-resaltado {
   color: var(--blanco);
 }
@@ -193,7 +300,7 @@
     border-bottom: none;
   }
 
-  .resumen-fila:nth-child(n + 4) {
+  .resumen-fila:nth-child(n + 5) {
     display: none;
   }
 }
@@ -211,5 +318,14 @@
 
   .reserva-form-fila {
     grid-template-columns: 1fr;
+  }
+
+  /* Cuatro pasos no entran con texto: solo el actual muestra su nombre */
+  .paso-chip:not(.actual) em {
+    display: none;
+  }
+
+  .paso-chip:not(.actual) {
+    padding-right: 6px;
   }
 }

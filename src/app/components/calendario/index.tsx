@@ -14,7 +14,7 @@ import {
   subMonths,
 } from "date-fns";
 import { es } from "date-fns/locale";
-import { abreElDia, minutosDeHora } from "../../lib/horarios";
+import { abreElDia, entraEnElDia, minutosDeHora } from "../../lib/horarios";
 import "./estilos.css";
 
 const DIAS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -95,9 +95,11 @@ type HorariosProps = {
   // Minutos del día que ya pasaron (solo si el día elegido es hoy)
   pasadosHasta?: number;
   cargando?: boolean;
+  // Minutos del servicio elegido: uno de una hora necesita dos medias horas libres seguidas
+  duracion?: number;
 };
 
-export function SelectorHorario({ horarios, ocupados, elegido, onElegir, pasadosHasta = -1, cargando }: HorariosProps) {
+export function SelectorHorario({ horarios, ocupados, elegido, onElegir, pasadosHasta = -1, cargando, duracion = 30 }: HorariosProps) {
   if (cargando) {
     return (
       <div className="horarios-grilla">
@@ -113,7 +115,8 @@ export function SelectorHorario({ horarios, ocupados, elegido, onElegir, pasados
     { titulo: "Tarde", lista: horarios.filter((h) => minutosDeHora(h) >= 13 * 60) },
   ].filter((g) => g.lista.length);
 
-  const libres = horarios.filter((h) => !ocupados.includes(h) && minutosDeHora(h) > pasadosHasta).length;
+  const libre = (h: string) => minutosDeHora(h) > pasadosHasta && entraEnElDia(h, duracion, horarios, ocupados);
+  const libres = horarios.filter(libre).length;
   if (!libres) return <p className="horarios-vacio">No quedan horarios libres este día. Probá con otro.</p>;
 
   return (
@@ -123,7 +126,7 @@ export function SelectorHorario({ horarios, ocupados, elegido, onElegir, pasados
           <p className="etiqueta horarios-titulo">{g.titulo}</p>
           <div className="horarios-grilla">
             {g.lista.map((h, i) => {
-              const off = ocupados.includes(h) || minutosDeHora(h) <= pasadosHasta;
+              const off = !libre(h);
               return (
                 <button
                   key={h}
@@ -133,7 +136,7 @@ export function SelectorHorario({ horarios, ocupados, elegido, onElegir, pasados
                   className={`horario ${elegido === h ? "activo" : ""}`}
                   style={{ animationDelay: `${i * 18}ms` }}
                   aria-pressed={elegido === h}
-                  aria-label={off ? `${h} ocupado` : `${h} libre`}
+                  aria-label={off ? `${h} no disponible` : `${h} libre`}
                 >
                   {h}
                 </button>

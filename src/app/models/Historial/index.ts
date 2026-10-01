@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { ServicioTurnoSchema } from "../Turnos";
 
 const HistorialSchema = new mongoose.Schema({
     Nombre_Cliente: {
@@ -29,13 +30,20 @@ const HistorialSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: ["Success", "Cancelled"]
-    }
+    },
+
+    Servicio: { type: ServicioTurnoSchema, default: undefined },
+    Origen: { type: String, enum: ["web", "panel"], default: undefined },
 
 }, {
     // El createdAt de acá te guarda automáticamente cuándo se creó el registro en el historial (la fecha de cierre)
     timestamps: true,
     collection: "historial"
 });
+
+// Las estadísticas leen por fecha y la ficha de cada cliente por teléfono
+HistorialSchema.index({ "Turno.Dia": 1 });
+HistorialSchema.index({ Telefono_Cliente: 1 });
 
 const Historial =
     mongoose.models.Historial ||

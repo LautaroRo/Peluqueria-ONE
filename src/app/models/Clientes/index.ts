@@ -18,6 +18,14 @@ const ClienteSchema = new mongoose.Schema({
         unique: true,
         trim: true
     },
+
+    // Notas internas de Héctor (cómo se corta, preferencias): solo se ven en el panel
+    notas: {
+        type: String,
+        trim: true,
+        maxlength: 500,
+        default: ""
+    },
 }, {
     timestamps: true,
     collection: "clientes"

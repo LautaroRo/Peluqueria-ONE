@@ -7,6 +7,7 @@ import "./estilos.css";
 
 const LINKS = [
   { href: "/", label: "Inicio" },
+  { href: "/#servicios", label: "Servicios" },
   { href: "/consultar", label: "Mi turno" },
 ];
 

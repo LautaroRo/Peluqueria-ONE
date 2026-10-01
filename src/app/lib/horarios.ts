@@ -37,6 +37,18 @@ const aHora = (min: number) => `${Math.floor(min / 60)}:${String(min % 60).padSt
 
 export const minutosDeHora = aMinutos;
 
+// Bloques de media hora que ocupa un servicio: 10:00 + 60 min → ["10:00", "10:30"]
+export function bloquesDe(hora: string, duracion = DURACION_TURNO_MIN): string[] {
+  const inicio = aMinutos(hora);
+  const n = Math.max(1, Math.ceil(duracion / DURACION_TURNO_MIN));
+  return Array.from({ length: n }, (_, i) => aHora(inicio + i * DURACION_TURNO_MIN));
+}
+
+// ¿Un servicio que arranca a esta hora entra en el día, sin pisar nada ocupado?
+export function entraEnElDia(hora: string, duracion: number, horarios: string[], ocupados: string[]) {
+  return bloquesDe(hora, duracion).every((b) => horarios.includes(b) && !ocupados.includes(b));
+}
+
 // Turnos que se pueden reservar un día de la semana dado
 export function horariosDelDia(diaSemana: number): string[] {
   const rango = HORARIOS[diaSemana as Dia];

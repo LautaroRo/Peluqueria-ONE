@@ -4,9 +4,24 @@ import Navbar from "./components/navbar";
 import Footer from "./components/footer";
 import Revelar from "./components/revelar";
 import EstadoLocal from "./components/estado-local";
-import { DIAS_CERRADO_TEXTO, HORARIOS_TEXTO } from "./lib/horarios";
-import { DIRECCION, FOTO_HECTOR, FOTO_LOCAL, LINK_COMO_LLEGAR, MAPA_EMBED } from "./lib/local";
+import { DIAS_CERRADO_TEXTO, HORARIOS, HORARIOS_TEXTO, HORAS_ANTICIPACION } from "./lib/horarios";
+import { DIRECCION, FOTO_HECTOR, FOTO_LOCAL, LINK_COMO_LLEGAR, MAPA_EMBED, SITIO_URL } from "./lib/local";
+import { SERVICIOS_BASE, Servicio, formatearDuracion, formatearPrecio } from "./lib/servicios";
+import { listarServicios } from "./lib/catalogo";
 import "./inicio.css";
+
+// Los servicios salen de la base: la página se regenera sola cada 5 minutos
+// (y al instante cuando se editan desde el panel)
+export const revalidate = 300;
+
+async function cargarServicios(): Promise<Servicio[]> {
+  try {
+    return await listarServicios();
+  } catch {
+    // Sin base (por ejemplo en el build), la lista de fábrica
+    return SERVICIOS_BASE.filter((s) => s.activo).map((s) => ({ ...s, _id: s.clave }));
+  }
+}
 
 const PALABRAS = ["Corte", "Barbería", "Estilo", "Precisión", "Experiencia"];
 
@@ -17,14 +32,78 @@ const OPINIONES = [
 ];
 
 const PASOS = [
-  { n: "01", titulo: "Elegí el día", texto: "Mirá el calendario y tocá el día que te quede cómodo." },
-  { n: "02", titulo: "Elegí el horario", texto: "Ves al instante qué horarios quedan libres." },
+  { n: "01", titulo: "Elegí el servicio", texto: "Corte, barba o los dos: ves cuánto dura y cuánto sale." },
+  { n: "02", titulo: "Día y horario", texto: "Mirá el calendario y elegí entre los horarios que quedan libres." },
   { n: "03", titulo: "Confirmá", texto: "Dejá tu nombre y teléfono. Listo, te esperamos." },
 ];
 
-export default function Inicio() {
+const PREGUNTAS = [
+  {
+    p: "¿Cómo saco un turno?",
+    r: "Desde Reservar: elegís el servicio, el día y el horario, y dejás tu nombre y teléfono. No hace falta crear una cuenta.",
+  },
+  {
+    p: "¿Puedo cambiar o cancelar mi turno?",
+    r: `Sí. En Mi turno ponés tu teléfono y lo cambiás o lo cancelás vos mismo, hasta ${HORAS_ANTICIPACION} horas antes.`,
+  },
+  {
+    p: `¿Y si faltan menos de ${HORAS_ANTICIPACION} horas?`,
+    r: "Desde la web ya no se puede tocar. Avisale directamente a Héctor así el horario le queda a otro cliente.",
+  },
+  {
+    p: "¿Cuánto dura cada servicio?",
+    r: "Cada servicio muestra su duración al reservar, y el calendario solo te ofrece los horarios donde entra completo.",
+  },
+  {
+    p: "¿Qué días atienden?",
+    r: `${HORARIOS_TEXTO.map((h) => `${h.dias} de ${h.horas.replace(" - ", " a ")}`).join(" y ")}. ${DIAS_CERRADO_TEXTO}.`,
+  },
+];
+
+const NOMBRES_DIA = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+// Ficha del negocio para Google (dirección, horarios, servicios)
+function datosEstructurados(servicios: Servicio[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HairSalon",
+    name: "ONE Peluquería y Barbería",
+    url: SITIO_URL,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: DIRECCION.calle,
+      addressLocality: "Córdoba",
+      addressRegion: "Córdoba",
+      addressCountry: "AR",
+    },
+    openingHoursSpecification: Object.entries(HORARIOS).map(([dia, [abre, cierra]]) => ({
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: NOMBRES_DIA[Number(dia)],
+      opens: abre,
+      closes: cierra,
+    })),
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Servicios",
+      itemListElement: servicios.map((s) => ({
+        "@type": "Offer",
+        itemOffered: { "@type": "Service", name: s.nombre, description: s.descripcion },
+        ...(s.precio !== null && { price: s.precio, priceCurrency: "ARS" }),
+      })),
+    },
+  };
+}
+
+export default async function Inicio() {
+  const servicios = await cargarServicios();
+
   return (
     <div className="inicio">
+      <script
+        type="application/ld+json"
+        // Los textos de los servicios los escribe Héctor: se escapa "<" para que nada cierre el <script>
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(datosEstructurados(servicios)).replace(/</g, "\\u003c") }}
+      />
       <Navbar />
 
       {/* --- Hero --- */}
@@ -124,8 +203,48 @@ export default function Inicio() {
         </div>
       </section>
 
+      {/* --- Servicios --- */}
+      <section id="servicios" className="seccion seccion--gris">
+        <div className="contenedor">
+          <Revelar>
+            <p className="etiqueta centrado">Lo que hacemos</p>
+          </Revelar>
+          <Revelar retraso={80}>
+            <h2 className="titulo seccion-titulo">
+              {servicios.some((s) => s.precio !== null) ? (
+                <>
+                  Servicios <span>y precios</span>
+                </>
+              ) : (
+                <>
+                  Nuestros <span>servicios</span>
+                </>
+              )}
+            </h2>
+          </Revelar>
+
+          <div className="servicios">
+            {servicios.map((s, i) => (
+              <Revelar key={s._id} retraso={(i % 3) * 100} className="servicio-wrap">
+                <Link href={`/reservar?servicio=${s.clave}`} className="servicio">
+                  <div className="servicio-cabecera">
+                    <h3>{s.nombre}</h3>
+                    {s.precio !== null && <span className="servicio-precio">{formatearPrecio(s.precio)}</span>}
+                  </div>
+                  {s.descripcion && <p>{s.descripcion}</p>}
+                  <div className="servicio-pie">
+                    <span>{formatearDuracion(s.duracion)}</span>
+                    <span className="servicio-reservar">Reservar →</span>
+                  </div>
+                </Link>
+              </Revelar>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* --- Cómo reservar --- */}
-      <section className="seccion seccion--gris">
+      <section className="seccion">
         <div className="contenedor">
           <Revelar>
             <p className="etiqueta centrado">Así de simple</p>
@@ -149,7 +268,7 @@ export default function Inicio() {
       </section>
 
       {/* --- Ubicación y horarios --- */}
-      <section className="seccion">
+      <section className="seccion seccion--gris">
         <div className="contenedor ubicacion">
           <Revelar className="ubicacion-mapa">
             <iframe
@@ -188,7 +307,7 @@ export default function Inicio() {
       </section>
 
       {/* --- Opiniones --- */}
-      <section className="seccion seccion--gris">
+      <section className="seccion">
         <div className="contenedor">
           <Revelar>
             <p className="etiqueta centrado">Lo que dicen nuestros clientes</p>
@@ -205,6 +324,33 @@ export default function Inicio() {
                 </div>
                 <blockquote>“{o.texto}”</blockquote>
                 <figcaption>— {o.autor}</figcaption>
+              </Revelar>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- Preguntas frecuentes --- */}
+      <section className="seccion seccion--gris">
+        <div className="contenedor faq">
+          <Revelar>
+            <p className="etiqueta centrado">Antes de venir</p>
+          </Revelar>
+          <Revelar retraso={80}>
+            <h2 className="titulo seccion-titulo">
+              Preguntas <span>frecuentes</span>
+            </h2>
+          </Revelar>
+          <div className="faq-lista">
+            {PREGUNTAS.map((q, i) => (
+              <Revelar key={q.p} retraso={i * 60}>
+                <details className="faq-item">
+                  <summary>
+                    {q.p}
+                    <i aria-hidden />
+                  </summary>
+                  <p>{q.r}</p>
+                </details>
               </Revelar>
             ))}
           </div>

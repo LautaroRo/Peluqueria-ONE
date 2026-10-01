@@ -10,6 +10,7 @@ import Modal from "../components/modal";
 import { HORAS_ANTICIPACION, ahoraEnCordoba, instanteTurno } from "../lib/horarios";
 import { capitalizar, diasHasta } from "../lib/formato";
 import { DIRECCION, LINK_COMO_LLEGAR } from "../lib/local";
+import { SERVICIO_SIN_DATO, formatearDuracion, formatearPrecio } from "../lib/servicios";
 import "./estilos.css";
 
 interface TurnoData {
@@ -17,6 +18,7 @@ interface TurnoData {
   Nombre_Cliente: string;
   Telefono_Cliente: number;
   Turno: { Dia: string; Hora: string };
+  Servicio?: { Nombre: string; Precio: number | null; Duracion: number };
 }
 
 export default function ConsultarTurno() {
@@ -76,6 +78,8 @@ export default function ConsultarTurno() {
   const faltanHoras = instante ? (instante.getTime() - Date.now()) / 3_600_000 : 0;
   const editable = faltanHoras >= HORAS_ANTICIPACION;
   const fecha = turno ? new Date(`${turno.Turno.Dia}T12:00:00`) : null;
+  // Los turnos de antes de los servicios no lo tienen guardado
+  const servicio = turno?.Servicio ?? SERVICIO_SIN_DATO;
 
   // Por días de calendario: "Es hoy", "Es mañana", "Es pasado mañana", "Faltan 5 días"
   const dias = turno ? diasHasta(turno.Turno.Dia, ahoraEnCordoba().dia) : 0;
@@ -152,6 +156,13 @@ export default function ConsultarTurno() {
             <div className="ticket-corte" aria-hidden />
 
             <div className="ticket-datos">
+              <div className="ticket-servicio">
+                <span>Servicio</span>
+                <strong>
+                  {servicio.Nombre} · {formatearDuracion(servicio.Duracion)}
+                  {servicio.Precio != null && <em>{formatearPrecio(servicio.Precio)}</em>}
+                </strong>
+              </div>
               <div>
                 <span>Con</span>
                 <strong>Héctor Rodríguez</strong>
@@ -173,7 +184,13 @@ export default function ConsultarTurno() {
             <div className="ticket-acciones">
               {editable ? (
                 <Link
-                  href={`/reservar?edit=${turno._id}&nombre=${encodeURIComponent(turno.Nombre_Cliente)}&tel=${turno.Telefono_Cliente}`}
+                  href={`/reservar?${new URLSearchParams({
+                    edit: turno._id,
+                    nombre: turno.Nombre_Cliente,
+                    tel: String(turno.Telefono_Cliente),
+                    serv: servicio.Nombre,
+                    dur: String(servicio.Duracion),
+                  })}`}
                   className="btn btn-blanco"
                 >
                   Cambiar día u hora

@@ -1,4 +1,6 @@
 // Datos del local, en un solo lugar
+export const SITIO_URL = "https://peluqueria-one-weld.vercel.app";
+
 export const DIRECCION = {
   calle: "Heriberto Martínez 6814",
   zona: "Argüello, Córdoba Capital",

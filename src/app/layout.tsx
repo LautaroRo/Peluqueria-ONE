@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { SITIO_URL } from "./lib/local";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -13,6 +14,7 @@ const DESCRIPCION =
   "Peluquería y barbería ONE en Argüello, Córdoba. Cortes clásicos y modernos con Héctor Rodríguez. Reservá tu turno online.";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITIO_URL),
   title: { default: "ONE · Peluquería y Barbería", template: "%s · ONE Peluquería" },
   description: DESCRIPCION,
   openGraph: {

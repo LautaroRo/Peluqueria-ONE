@@ -25,3 +25,25 @@ export async function GET() {
     return NextResponse.json({ success: false, error: "No se pudieron obtener los clientes." }, { status: 500 });
   }
 }
+
+// Notas internas de un cliente (lo único editable desde el panel)
+export async function PATCH(request: Request) {
+  if (!(await esAdmin())) {
+    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  }
+
+  try {
+    const id = new URL(request.url).searchParams.get("id");
+    if (!id || !/^[a-f0-9]{24}$/i.test(id)) return NextResponse.json({ error: "ID requerido." }, { status: 400 });
+    const body = await request.json().catch(() => null);
+    const notas = String(body?.notas ?? "").trim().slice(0, 500);
+
+    await connectDB();
+    const cliente = await Clientes.findByIdAndUpdate(id, { $set: { notas } }, { returnDocument: "after" }).lean();
+    if (!cliente) return NextResponse.json({ error: "El cliente no existe." }, { status: 404 });
+    return NextResponse.json(cliente);
+  } catch (error) {
+    console.error("PATCH /api/clientes", error);
+    return NextResponse.json({ error: "No se pudieron guardar las notas." }, { status: 500 });
+  }
+}

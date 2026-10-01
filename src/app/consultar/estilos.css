@@ -215,3 +215,14 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* El servicio ocupa todo el ancho del ticket, arriba de "Con" y "Dónde" */
+.ticket-servicio {
+  grid-column: 1 / -1;
+}
+
+.ticket-servicio em {
+  margin-left: 10px;
+  color: var(--gris);
+  font-style: normal;
+}

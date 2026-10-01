@@ -1,29 +1,30 @@
 "use client";
 
-import { FormEvent, Suspense, useRef, useState } from "react";
+import { FormEvent, Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { format, getDay, isSameDay, startOfToday } from "date-fns";
+import { format, getDay, isBefore, isSameDay, startOfToday } from "date-fns";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import Modal, { TipoModal } from "../components/modal";
 import { Calendario, SelectorHorario } from "../components/calendario";
-import { DURACION_TURNO_MIN, ahoraEnCordoba, horariosDelDia, instanteTurno } from "../lib/horarios";
+import { abreElDia, ahoraEnCordoba, horariosDelDia, instanteTurno } from "../lib/horarios";
+import { Servicio, formatearDuracion, formatearPrecio } from "../lib/servicios";
 import { DIRECCION } from "../lib/local";
 import { fechaLarga as formatearFecha } from "../lib/formato";
 import "./estilos.css";
 
 type Aviso = { tipo: TipoModal; titulo: string; mensaje: string; alCerrar?: () => void } | null;
 
-const PASOS = ["Día", "Horario", "Tus datos"];
+const PASOS = ["Servicio", "Día", "Horario", "Tus datos"];
 
 // Link para sumar el turno a Google Calendar
-function linkCalendario(dia: string, hora: string) {
+function linkCalendario(dia: string, hora: string, duracion: number, servicio: string) {
   const inicio = instanteTurno(dia, hora);
-  const fin = new Date(inicio.getTime() + DURACION_TURNO_MIN * 60_000);
+  const fin = new Date(inicio.getTime() + duracion * 60_000);
   const f = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
   const p = new URLSearchParams({
     action: "TEMPLATE",
-    text: "Turno en ONE Peluquería",
+    text: `${servicio} · ONE Peluquería`,
     dates: `${f(inicio)}/${f(fin)}`,
     details: "Turno con Héctor Rodríguez. Para modificarlo o cancelarlo, entrá a Mi turno en la web.",
     location: `${DIRECCION.calle}, ${DIRECCION.zona}`,
@@ -38,8 +39,15 @@ function Reservar() {
   const editId = params.get("edit");
   const nombreEdit = params.get("nombre") ?? "";
   const telEdit = (params.get("tel") ?? "").replace(/\D/g, "");
+  // Al cambiar un turno el servicio no se toca: se respeta su duración
+  const durEdit = Number(params.get("dur")) || 30;
+  const servEdit = params.get("serv") || "Corte";
+  const servPedido = params.get("servicio");
 
-  const [paso, setPaso] = useState(0);
+  const [paso, setPaso] = useState(editId ? 1 : 0);
+  const [servicios, setServicios] = useState<Servicio[] | null>(null);
+  const [servicio, setServicio] = useState<Servicio | null>(null);
+  const [cerrados, setCerrados] = useState<Set<string>>(new Set());
   const [mes, setMes] = useState(startOfToday());
   const [dia, setDia] = useState<Date | null>(null);
   const [hora, setHora] = useState("");
@@ -56,6 +64,38 @@ function Reservar() {
   // Los horarios de hoy que ya pasaron quedan bloqueados (con hora de Córdoba)
   const pasadosHasta = esHoy ? ahoraEnCordoba().minutos : -1;
 
+  const duracion = editId ? durEdit : (servicio?.duracion ?? 30);
+  const nombreServicio = editId ? servEdit : (servicio?.nombre ?? "");
+
+  // Catálogo y días cerrados por Héctor: dos pedidos chicos, en paralelo, una sola vez
+  useEffect(() => {
+    let vivo = true;
+    fetch("/api/servicios")
+      .then((r) => r.json())
+      .then((lista: Servicio[]) => {
+        if (!vivo) return;
+        const ok = Array.isArray(lista) ? lista : [];
+        setServicios(ok);
+        // Si vino desde una tarjeta de la landing, el servicio ya está elegido
+        const pedido = !editId && ok.find((x) => x.clave === servPedido);
+        if (pedido) {
+          setServicio(pedido);
+          setPaso(1);
+        }
+      })
+      .catch(() => vivo && setServicios([]));
+    fetch("/api/bloqueos")
+      .then((r) => r.json())
+      .then((d) => vivo && Array.isArray(d?.cerrados) && setCerrados(new Set(d.cerrados)))
+      .catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, [editId, servPedido]);
+
+  const hoy = startOfToday();
+  const diaBloqueado = (d: Date) => isBefore(d, hoy) || !abreElDia(getDay(d)) || cerrados.has(format(d, "yyyy-MM-dd"));
+
   // Solo vale la respuesta del último día pedido (si se toca rápido otro día, la anterior se descarta)
   const pedidoRef = useRef("");
 
@@ -63,7 +103,9 @@ function Reservar() {
     pedidoRef.current = d;
     setCargandoHoras(true);
     try {
-      const res = await fetch(`/api/turnos?dia=${d}`, { cache: "no-store" });
+      // Al reprogramar, el propio turno no cuenta como ocupado
+      const excluir = editId ? `&excluir=${editId}` : "";
+      const res = await fetch(`/api/turnos?dia=${d}${excluir}`, { cache: "no-store" });
       const data = await res.json();
       if (pedidoRef.current !== d) return;
       setOcupados(Array.isArray(data) ? data.map((t: { Turno: { Hora: string } }) => t.Turno.Hora) : []);
@@ -74,12 +116,19 @@ function Reservar() {
     }
   };
 
+  const elegirServicio = (s: Servicio) => {
+    // Un servicio más largo puede no entrar en el horario que ya estaba elegido
+    if (s.duracion !== servicio?.duracion) setHora("");
+    setServicio(s);
+    window.setTimeout(() => setPaso(dia ? 2 : 1), 180);
+  };
+
   const elegirDia = (d: Date) => {
     setDia(d);
     setHora("");
     cargarOcupados(format(d, "yyyy-MM-dd"));
     // Avanza solo al horario: un toque menos
-    window.setTimeout(() => setPaso(1), 180);
+    window.setTimeout(() => setPaso(2), 180);
   };
 
   const enviar = async (e?: FormEvent) => {
@@ -108,7 +157,7 @@ function Reservar() {
         : await fetch("/api/turnos", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ Nombre_Cliente: nombre, Telefono_Cliente: telefono, Turno: turno }),
+            body: JSON.stringify({ Nombre_Cliente: nombre, Telefono_Cliente: telefono, Turno: turno, Servicio: servicio?.clave }),
           });
 
       const data = await res.json().catch(() => ({}));
@@ -122,7 +171,7 @@ function Reservar() {
       if (res.status === 409 && !String(data?.error).includes("Ya tenés")) {
         await cargarOcupados(diaStr);
         setHora("");
-        setPaso(1);
+        setPaso(2);
       }
       setAviso({ tipo: "error", titulo: "No se pudo reservar", mensaje: data?.error ?? "Probá de nuevo en un momento." });
     } catch {
@@ -147,7 +196,9 @@ function Reservar() {
         {/* Pasos */}
         <ol className="pasos-barra" aria-label="Pasos de la reserva">
           {PASOS.map((p, i) => {
-            const habilitado = i === 0 || (i === 1 && dia) || (i === 2 && dia && hora);
+            if (editId && i === 0) return null;
+            const habilitado = (i === 0 && !editId) || (i === 1 && (servicio || editId)) || (i === 2 && dia) || (i === 3 && dia && hora);
+            const numero = editId ? i : i + 1;
             return (
               <li key={p}>
                 <button
@@ -157,8 +208,8 @@ function Reservar() {
                   disabled={!habilitado}
                   aria-current={paso === i ? "step" : undefined}
                 >
-                  <span>{paso > i ? "✓" : i + 1}</span>
-                  {editId && i === 2 ? "Confirmar" : p}
+                  <span>{paso > i ? "✓" : numero}</span>
+                  <em>{editId && i === 3 ? "Confirmar" : p}</em>
                 </button>
               </li>
             );
@@ -169,29 +220,50 @@ function Reservar() {
           <section className="tarjeta reserva-panel">
             {paso === 0 && (
               <div key="p0" className="reserva-paso">
-                <Calendario mes={mes} onMes={setMes} seleccion={dia} onSeleccion={elegirDia} />
+                <p className="etiqueta reserva-subtitulo">¿Qué te hacés?</p>
+                {servicios === null ? (
+                  <div className="servicios-lista">
+                    {[0, 1, 2].map((i) => (
+                      <span key={i} className="servicio-opcion esqueleto" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="servicios-lista">
+                    {servicios.map((s, i) => (
+                      <button
+                        key={s._id}
+                        type="button"
+                        className={`servicio-opcion ${servicio?._id === s._id ? "activo" : ""}`}
+                        onClick={() => elegirServicio(s)}
+                        aria-pressed={servicio?._id === s._id}
+                        style={{ animationDelay: `${i * 50}ms` }}
+                      >
+                        <span className="servicio-opcion-texto">
+                          <strong>{s.nombre}</strong>
+                          {s.descripcion && <small>{s.descripcion}</small>}
+                        </span>
+                        <span className="servicio-opcion-meta">
+                          {s.precio !== null && <b>{formatearPrecio(s.precio)}</b>}
+                          <small>{formatearDuracion(s.duracion)}</small>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {paso === 1 && (
               <div key="p1" className="reserva-paso">
-                <div className="reserva-paso-cabecera">
-                  <button type="button" className="volver" onClick={() => setPaso(0)}>
-                    ← Cambiar día
-                  </button>
-                  <p className="reserva-fecha">{fechaLarga}</p>
-                </div>
-                <SelectorHorario
-                  horarios={horarios}
-                  ocupados={ocupados}
-                  elegido={hora}
-                  onElegir={setHora}
-                  pasadosHasta={pasadosHasta}
-                  cargando={cargandoHoras}
-                />
-                <button type="button" className="btn btn-blanco reserva-continuar" disabled={!hora} onClick={() => setPaso(2)}>
-                  {hora ? `Continuar con las ${hora}` : "Elegí un horario"}
-                </button>
+                {!editId && (
+                  <div className="reserva-paso-cabecera">
+                    <button type="button" className="volver" onClick={() => setPaso(0)}>
+                      ← Cambiar servicio
+                    </button>
+                    <p className="reserva-fecha">{nombreServicio}</p>
+                  </div>
+                )}
+                <Calendario mes={mes} onMes={setMes} seleccion={dia} onSeleccion={elegirDia} bloqueado={diaBloqueado} />
               </div>
             )}
 
@@ -199,6 +271,34 @@ function Reservar() {
               <div key="p2" className="reserva-paso">
                 <div className="reserva-paso-cabecera">
                   <button type="button" className="volver" onClick={() => setPaso(1)}>
+                    ← Cambiar día
+                  </button>
+                  <p className="reserva-fecha">{fechaLarga}</p>
+                </div>
+                {duracion > 30 && (
+                  <p className="reserva-nota">
+                    {nombreServicio} dura {formatearDuracion(duracion)}: te mostramos los horarios donde entra completo.
+                  </p>
+                )}
+                <SelectorHorario
+                  horarios={horarios}
+                  ocupados={ocupados}
+                  elegido={hora}
+                  onElegir={setHora}
+                  pasadosHasta={pasadosHasta}
+                  cargando={cargandoHoras}
+                  duracion={duracion}
+                />
+                <button type="button" className="btn btn-blanco reserva-continuar" disabled={!hora} onClick={() => setPaso(3)}>
+                  {hora ? `Continuar con las ${hora}` : "Elegí un horario"}
+                </button>
+              </div>
+            )}
+
+            {paso === 3 && (
+              <div key="p3" className="reserva-paso">
+                <div className="reserva-paso-cabecera">
+                  <button type="button" className="volver" onClick={() => setPaso(2)}>
                     ← Cambiar horario
                   </button>
                 </div>
@@ -252,6 +352,9 @@ function Reservar() {
                       />
                       <label htmlFor="telefono">Teléfono (lo usás para ver tu turno)</label>
                     </div>
+                    <p className="reserva-politica">
+                      Podés cambiar o cancelar tu turno desde <strong>Mi turno</strong> hasta 8 horas antes.
+                    </p>
                     <button type="submit" className="btn btn-blanco reserva-continuar" disabled={enviando}>
                       {enviando ? <span className="cargando-icono" /> : "Confirmar reserva"}
                     </button>
@@ -264,13 +367,20 @@ function Reservar() {
           {/* Resumen que se va completando */}
           <aside className="tarjeta resumen" aria-live="polite">
             <p className="etiqueta">Tu turno</p>
+            <div className={`resumen-fila ${nombreServicio ? "lleno" : ""}`}>
+              <span>Servicio</span>
+              <strong>
+                {nombreServicio || "—"}
+                {!editId && servicio?.precio != null && <em className="resumen-precio">{formatearPrecio(servicio.precio)}</em>}
+              </strong>
+            </div>
             <div className={`resumen-fila ${dia ? "lleno" : ""}`}>
               <span>Día</span>
               <strong>{fechaLarga ?? "—"}</strong>
             </div>
             <div className={`resumen-fila ${hora ? "lleno" : ""}`}>
               <span>Horario</span>
-              <strong>{hora ? `${hora} hs` : "—"}</strong>
+              <strong>{hora ? `${hora} hs · ${formatearDuracion(duracion)}` : "—"}</strong>
             </div>
             <div className="resumen-fila lleno">
               <span>Con</span>
@@ -305,7 +415,12 @@ function Reservar() {
           titulo={editId ? "¡Turno actualizado!" : "¡Turno confirmado!"}
           acciones={
             <>
-              <a href={linkCalendario(confirmado.dia, confirmado.hora)} target="_blank" rel="noopener noreferrer" className="btn btn-borde">
+              <a
+                href={linkCalendario(confirmado.dia, confirmado.hora, duracion, nombreServicio)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-borde"
+              >
                 Agendar
               </a>
               <button type="button" className="btn btn-blanco" onClick={() => router.replace("/consultar")}>
@@ -315,8 +430,9 @@ function Reservar() {
           }
         >
           <p>
-            Te esperamos el <strong className="modal-resaltado">{fechaLarga?.toLowerCase()}</strong> a las{" "}
-            <strong className="modal-resaltado">{confirmado.hora} hs</strong>.
+            <strong className="modal-resaltado">{nombreServicio}</strong> el{" "}
+            <strong className="modal-resaltado">{fechaLarga?.toLowerCase()}</strong> a las{" "}
+            <strong className="modal-resaltado">{confirmado.hora} hs</strong>. ¡Te esperamos!
           </p>
         </Modal>
       )}
@@ -333,4 +449,3 @@ export default function Page() {
     </Suspense>
   );
 }
-
