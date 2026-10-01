@@ -1,412 +1,217 @@
-/* --- 1. RESET Y BASES --- */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+.consultar {
+  max-width: 560px;
 }
 
-body {
-  background-color: #000;
-  color: #fff;
-  font-family: 'Inter', sans-serif;
-  overflow-x: hidden;
-  width: 100%;
-}
-
-.one-main-wrapper {
-  background: #000;
-  min-height: 100vh;
-  width: 100%;
-  position: relative;
+/* --- Buscar --- */
+.buscar {
   display: flex;
   flex-direction: column;
-}
-
-/* --- 2. ACCIONES Y BOTONES --- */
-.one-acciones-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  margin-top: 20px;
-}
-
-.one-btn-buscar-reserva {
-  background: #ffffff;
-  color: #000000;
-  padding: 12px 32px;
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  border: 1px solid #ffffff;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  display: block;
-  width: max-content;
-  margin: 25px auto 0 auto;
-  text-align: center;
-  text-decoration: none;
-}
-
-.one-btn-buscar-reserva:hover {
-  background: #0d0d0d;
-  color: #ffffff;
-  border-color: #444;
-}
-
-.one-btn-form-main {
-  background: #ffffff;
-  color: #000000;
-  padding: 12px 50px;
-  font-size: 14px;
-  font-weight: 600;
-  border: 1px solid #ffffff;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.one-btn-form-main:hover {
-  background: #0d0d0d;
-  color: #ffffff;
-  border-color: #444;
-}
-
-.one-btn-cancelar {
-  background: #8f0c0c;
-  color: white;
-  border: 1px solid #3a2222;
-  padding: 12px 50px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  display: inline-block;
-}
-
-.one-btn-cancelar:hover {
-  background: #3a1a1a;
-  color: #ffffff;
-  border-color: #5c2e2e;
-  transform: translateY(-1px);
-}
-
-.one-btn-volver-simple {
-  background: none;
-  border: none;
-  color: #555;
-  margin-top: 15px;
-  cursor: pointer;
-  width: 100%;
-  font-size: 0.85rem;
-  letter-spacing: 0.5px;
-  transition: color 0.3s;
-}
-
-.one-btn-volver-simple:hover {
-  color: #fff;
-}
-
-/* --- 3. CONTENEDORES Y TARJETAS --- */
-.one-container-consultar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  flex: 1;
-  padding: 120px 20px 40px 20px;
-  width: 100%;
-  max-width: 100vw;
-}
-
-.one-location-card,
-.one-review-card {
-  background: #050505;
-  border: 1px solid #111;
-  padding: 40px;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 500px;
-}
-
-.one-main-title {
-  text-align: center;
-  margin-bottom: 40px;
-  font-size: 52px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  width: 100%;
-}
-
-.one-main-title span {
-  opacity: 0.4;
-  font-style: italic;
-  font-weight: 200;
-}
-
-.one-buscar-card {
-  max-width: 450px;
-  margin: 0 auto;
-}
-
-.one-buscar-text {
-  color: #888;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.one-input-premium-propio {
-  background: #0d0d0d;
-  border: 1px solid #1a1a1a;
-  color: #fff;
-  padding: 18px;
-  border-radius: 8px;
-  width: 100%;
-  outline: none;
-  font-size: 16px;
-  text-align: center;
-}
-
-.one-input-premium-propio:focus {
-  border-color: #fff;
-}
-
-.one-error-text {
-  color: #ff4444;
-  font-size: 12px;
-  margin-top: 10px;
-  text-align: center;
-}
-
-/* --- 4. TARJETA DE RESULTADO PREMIUM --- */
-.one-turno-confirmado {
-  width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 35px 30px;
-  background: #050505;
-  border: 1px solid #111;
-  border-radius: 22px;
   gap: 14px;
-  box-shadow: 0 0 50px rgba(255,255,255,0.01);
+  padding: clamp(22px, 5vw, 34px);
+  animation: subir 0.8s 0.2s var(--ease) both;
 }
 
-.one-turno-badge {
-  font-size: 10px;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: #444;
-  margin: 0;
-}
-
-.one-turno-title {
-  font-size: clamp(28px, 6vw, 38px);
-  font-weight: 900;
-  text-transform: uppercase;
-  line-height: 1.1;
-  margin: 0;
-}
-
-.one-turno-title span {
-  font-style: italic;
-  font-weight: 300;
-  opacity: 0.9;
-}
-
-.one-turno-text {
-  color: #666;
-  font-size: 15px;
-  margin: 0;
-}
-
-.one-turno-fecha {
-  font-size: clamp(20px, 5vw, 28px);
-  font-weight: 800;
-  color: #fff;
-  text-transform: capitalize;
-  line-height: 1.2;
-}
-
-.one-turno-hora {
-  font-size: 18px;
-  color: #888;
-  margin-bottom: 5px;
-}
-
-.one-turno-hora strong {
-  color: #fff;
-}
-
-/* --- 5. COMPONENTES GLOBALES (MODALES OVERLAY) --- */
-.one-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  z-index: 9999;
-  padding: 20px;
-  box-sizing: border-box;
-  animation: oneFadeInOverlay 0.25s ease-out forwards;
-}
-
-.one-modal-card {
-  background: #0b0f19;
-  border: 1px solid #1e293b;
-  padding: 35px 25px;
-  border-radius: 20px;
-  max-width: 400px;
-  width: 100%;
-  text-align: center;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  animation: onePopUpCard 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-.one-modal-icon-wrapper {
-  margin-bottom: 20px;
-}
-
-.one-modal-checkmark-success {
-  width: 65px;
-  height: 65px;
-  background-color: #10b981;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.25);
-}
-
-.checkmark-icon-badge {
-  color: #ffffff !important;
-  font-size: 34px !important;
-  font-weight: bold !important;
-  line-height: 1;
-  user-select: none;
-  animation: tildePopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.5) 0.2s forwards;
-  opacity: 0;
-  transform: scale(0);
-}
-
-.one-modal-title {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 10px;
-}
-
-.one-modal-text {
+.buscar-error {
+  color: var(--error);
   font-size: 0.9rem;
-  color: #94a3b8;
-  line-height: 1.5;
-  margin-bottom: 20px;
+  animation: sacudir 0.4s ease;
 }
 
-.one-modal-icon-warning {
-  font-size: 48px;
-  line-height: 1;
-  margin-bottom: 5px;
+@keyframes sacudir {
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
 }
 
-.one-modal-actions-row {
+.buscar-pie {
+  text-align: center;
+  color: var(--gris);
+  font-size: 0.88rem;
+}
+
+.buscar-pie a {
+  color: var(--blanco);
+  font-weight: 800;
+}
+
+/* --- Ticket --- */
+.ticket {
+  position: relative;
+  padding: clamp(24px, 5vw, 36px);
+  background: var(--carbon);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: 20px;
+  animation: ticket 0.7s var(--rebote) both;
+}
+
+@keyframes ticket {
+  from { opacity: 0; transform: translateY(40px) rotate(-2deg) scale(0.95); }
+  to { opacity: 1; transform: none; }
+}
+
+.ticket-cabecera {
   display: flex;
-  gap: 12px;
-  width: 100%;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  margin-top: 15px;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
 }
 
-.one-btn-modal-back {
-  background: #1e1e1e;
-  color: #888888;
-  border: 1px solid #333333;
-  padding: 10px 20px;
-  font-size: 13px;
+.ticket-badge {
+  padding: 6px 12px;
+  background: var(--blanco);
+  color: var(--negro);
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.ticket-cuenta {
+  color: var(--gris);
+  font-size: 0.85rem;
   font-weight: 700;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
 }
 
-.one-btn-modal-back:hover {
-  background: #2a2a2a;
-  color: #ffffff;
+.ticket-hola {
+  color: var(--gris);
+  font-size: 1.05rem;
 }
 
-.one-btn-modal-confirm-delete {
-  background: #e11d48;
-  color: #ffffff;
-  border: none;
-  padding: 10px 20px;
-  font-size: 13px;
+.ticket-hola strong {
+  color: var(--blanco);
+}
+
+.ticket-fecha {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 18px 0 26px;
+}
+
+.ticket-dia {
+  font-size: clamp(4.5rem, 16vw, 6.5rem);
+  font-weight: 900;
+  font-style: italic;
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+}
+
+.ticket-mes {
+  font-size: 1.3rem;
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.ticket-semana {
+  color: var(--gris);
+}
+
+.ticket-hora {
+  margin-left: auto;
+  padding: 10px 14px;
+  border: 1px solid var(--blanco);
+  border-radius: 12px;
+  font-size: 1.3rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Línea punteada con los dos semicírculos de un ticket de verdad */
+.ticket-corte {
+  position: relative;
+  height: 1px;
+  margin: 0 calc(-1 * clamp(24px, 5vw, 36px));
+  background: repeating-linear-gradient(90deg, var(--borde-fuerte) 0 8px, transparent 8px 16px);
+}
+
+.ticket-corte::before,
+.ticket-corte::after {
+  content: "";
+  position: absolute;
+  top: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--negro);
+  border: 1px solid var(--borde-fuerte);
+}
+
+.ticket-corte::before {
+  left: -13px;
+}
+
+.ticket-corte::after {
+  right: -13px;
+}
+
+.ticket-datos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 24px 0 6px;
+}
+
+.ticket-datos span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gris-oscuro);
+}
+
+.ticket-datos a {
   font-weight: 700;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
+  text-decoration: none;
 }
 
-.one-btn-modal-confirm-delete:hover {
-  background: #be123c;
-  transform: translateY(-1px);
+.ticket-datos a:hover {
+  text-decoration: underline;
 }
 
-/* --- 6. RESPONSIVE OPTIMIZADO --- */
-@media (max-width: 768px) {
-  .one-container-consultar { padding-top: 100px; }
-  .one-main-title { font-size: 38px; }
-  .one-turno-confirmado { padding: 30px 20px; }
-  .one-input-premium-propio { font-size: 16px !important; }
+.ticket-aviso {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px dashed var(--borde-fuerte);
+  border-radius: 10px;
+  color: var(--gris);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.ticket-acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.ticket-acciones .btn {
+  padding: 0 12px;
+  font-size: 0.72rem;
+}
+
+.ticket-otro {
+  display: block;
+  margin: 22px auto 0;
 }
 
 @media (max-width: 480px) {
-  .one-acciones-container { width: 100%; }
-  .one-btn-form-main, .one-btn-cancelar { width: 100%; padding: 12px 20px; }
-  .one-main-title { font-size: 32px; }
-}
+  .ticket-fecha {
+    flex-wrap: wrap;
+  }
 
-/* --- 7. CONFIGURACIÓN EXCLUSIVA PARA TU COMPONENTE FOOTER NUEVO --- */
-footer, 
-.one-footer-landing,
-[class*="footer"] {
-  width: 100% !important;
-  text-align: center !important;
-  display: block !important;
-  box-sizing: border-box !important;
-}
+  .ticket-hora {
+    margin-left: 0;
+  }
 
-/* --- 8. KEYFRAMES DE ANIMACIONES --- */
-@keyframes oneFadeInOverlay { 
-  from { opacity: 0; } 
-  to { opacity: 1; } 
-}
-
-@keyframes onePopUpCard { 
-  from { transform: scale(0.85); opacity: 0; } 
-  to { transform: scale(1); opacity: 1; } 
-}
-
-@keyframes tildePopIn { 
-  0% { transform: scale(0); opacity: 0; } 
-  100% { transform: scale(1); opacity: 1; } 
+  .ticket-acciones,
+  .ticket-datos {
+    grid-template-columns: 1fr;
+  }
 }

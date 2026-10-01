@@ -1,36 +1,26 @@
 import mongoose from "mongoose";
 
-const MONGO_DB = process.env.MONGO_DB_URL;
-
-if (!MONGO_DB) {
-  throw new Error("MONGO_DB_URL no está definida");
-}
-
 interface MongooseCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var mongooseCache: MongooseCache | undefined;
 }
 
-const cached: MongooseCache = global.mongooseCache || {
-  conn: null,
-  promise: null,
-};
-
+const cached: MongooseCache = global.mongooseCache || { conn: null, promise: null };
 global.mongooseCache = cached;
 
+// La conexión se reutiliza entre pedidos (Vercel mantiene viva la función un rato)
 export async function connectDB() {
-  if (cached.conn) {
-    return cached.conn;
-  }
+  if (cached.conn) return cached.conn;
 
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGO_DB);
-  }
+  // Se valida acá y no al importar: así el build no se cae si la variable no está en esa etapa
+  const url = process.env.MONGO_DB_URL;
+  if (!url) throw new Error("MONGO_DB_URL no está definida");
+
+  cached.promise ??= mongoose.connect(url, { serverSelectionTimeoutMS: 8000 });
 
   try {
     cached.conn = await cached.promise;

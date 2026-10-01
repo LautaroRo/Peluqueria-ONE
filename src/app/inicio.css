@@ -1,0 +1,555 @@
+.inicio {
+  background: var(--negro);
+}
+
+.contenedor {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+}
+
+.centrado {
+  display: block;
+  text-align: center;
+}
+
+.seccion {
+  padding: clamp(80px, 12vw, 140px) 20px;
+}
+
+.seccion--gris {
+  background: var(--carbon);
+  border-top: 1px solid var(--borde);
+  border-bottom: 1px solid var(--borde);
+}
+
+.seccion-titulo {
+  margin: 14px 0 56px;
+  text-align: center;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+}
+
+/* --- Estado del local --- */
+.estado-local {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 1.5em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--gris);
+}
+
+.estado-local i {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gris-oscuro);
+}
+
+.estado-local.abierto {
+  color: var(--blanco);
+}
+
+.estado-local.abierto i {
+  background: var(--blanco);
+}
+
+/* Pulso cuando está abierto */
+.estado-local.abierto i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--blanco);
+  animation: latido 1.8s ease-out infinite;
+}
+
+@keyframes latido {
+  from { transform: scale(1); opacity: 0.8; }
+  to { transform: scale(3); opacity: 0; }
+}
+
+/* --- Hero --- */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  text-align: center;
+}
+
+.hero-fondo {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-foto {
+  object-fit: cover;
+  opacity: 0.4;
+  animation: acercar 20s ease-out both;
+}
+
+@keyframes acercar {
+  from { transform: scale(1.12); }
+  to { transform: scale(1); }
+}
+
+/* Sin foto: franjas diagonales de poste de barbería, en blanco y negro, que avanzan despacio */
+.hero-rayas {
+  position: absolute;
+  inset: -20%;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.045) 0 2px,
+    transparent 2px 46px
+  );
+  animation: rayas 18s linear infinite;
+  mask-image: radial-gradient(ellipse at center, #000 10%, transparent 70%);
+}
+
+@keyframes rayas {
+  to { transform: translate(65px, 65px); }
+}
+
+.hero-luz {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 42%, rgba(255, 255, 255, 0.08), transparent 70%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.2), transparent 30%, transparent 70%, #000);
+}
+
+.hero-contenido {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120px 20px 100px;
+}
+
+.hero-estado {
+  margin-bottom: 26px;
+  padding: 8px 16px;
+  border: 1px solid var(--borde-fuerte);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  animation: subir 0.8s 0.1s var(--ease) both;
+}
+
+.hero-estado:empty {
+  visibility: hidden;
+}
+
+.hero-tag {
+  color: var(--gris);
+  animation: subir 0.8s 0.2s var(--ease) both;
+}
+
+.hero-titulo {
+  display: flex;
+  margin: 10px 0 6px;
+  font-size: clamp(7rem, 26vw, 15rem);
+  font-weight: 900;
+  font-style: italic;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+}
+
+/* Las letras caen una por una */
+.hero-titulo span {
+  display: inline-block;
+  animation: letra 1s var(--ease) both;
+}
+
+@keyframes letra {
+  from { opacity: 0; transform: translateY(60%) skewY(8deg); filter: blur(10px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+.hero-texto {
+  max-width: 420px;
+  color: var(--gris);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  line-height: 1.8;
+  animation: subir 0.8s 0.75s var(--ease) both;
+}
+
+.hero-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 40px;
+  animation: subir 0.8s 0.9s var(--ease) both;
+}
+
+.hero-bajar {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  z-index: 2;
+  width: 1px;
+  height: 60px;
+  overflow: hidden;
+  translate: -50% 0;
+  background: var(--borde-fuerte);
+  animation: aparecer 1s 1.3s both;
+}
+
+.hero-bajar span {
+  position: absolute;
+  inset: 0;
+  background: var(--blanco);
+  animation: caer 2s var(--ease) infinite;
+}
+
+@keyframes caer {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+
+/* --- Cinta que corre --- */
+.cinta {
+  overflow: hidden;
+  padding: 22px 0;
+  background: var(--blanco);
+  color: var(--negro);
+}
+
+.cinta-pista {
+  display: flex;
+  width: max-content;
+  animation: correr 28s linear infinite;
+}
+
+.cinta:hover .cinta-pista {
+  animation-play-state: paused;
+}
+
+.cinta-grupo {
+  display: flex;
+}
+
+.cinta-grupo span {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding-right: 40px;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cinta-grupo i {
+  font-style: normal;
+  font-size: 0.6em;
+}
+
+@keyframes correr {
+  to { transform: translateX(-50%); }
+}
+
+/* --- Perfil --- */
+.perfil {
+  display: grid;
+  grid-template-columns: minmax(0, 440px) 1fr;
+  align-items: center;
+  gap: clamp(40px, 7vw, 90px);
+}
+
+.perfil-foto {
+  position: relative;
+  isolation: isolate;
+  aspect-ratio: 4 / 5;
+}
+
+.perfil-foto img {
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.1);
+  transition: filter 0.8s ease;
+}
+
+.perfil-foto:hover img {
+  filter: grayscale(0.3);
+}
+
+/* Sin foto: monograma grande con textura */
+.perfil-monograma {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 14px),
+    radial-gradient(ellipse at 30% 20%, #1c1c1c, #050505 70%);
+  border: 1px solid var(--borde);
+}
+
+.perfil-monograma span {
+  font-size: clamp(7rem, 18vw, 11rem);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.85);
+  transition: transform 0.8s var(--ease), letter-spacing 0.8s var(--ease);
+}
+
+.perfil-foto:hover .perfil-monograma span {
+  transform: scale(1.05);
+  letter-spacing: 0;
+}
+
+/* Marco desplazado que se acomoda al pasar el mouse */
+.perfil-marco {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 1px solid var(--blanco);
+  transform: translate(18px, 18px);
+  transition: transform 0.6s var(--ease);
+}
+
+.perfil-foto:hover .perfil-marco {
+  transform: translate(8px, 8px);
+}
+
+.perfil-nombre {
+  margin: 14px 0 26px;
+  font-size: clamp(3rem, 8vw, 5.4rem);
+}
+
+.perfil-destacado {
+  margin-bottom: 14px;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.perfil-texto {
+  max-width: 480px;
+  margin-bottom: 34px;
+  color: var(--gris);
+  line-height: 1.8;
+}
+
+/* --- Pasos --- */
+.pasos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.paso {
+  position: relative;
+  padding: 34px 28px;
+  overflow: hidden;
+  background: var(--negro);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  transition: border-color 0.3s, transform 0.4s var(--ease);
+}
+
+.paso:hover {
+  border-color: var(--gris-oscuro);
+  transform: translateY(-6px);
+}
+
+.paso-numero {
+  display: block;
+  margin-bottom: 26px;
+  font-size: 3.4rem;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--gris-oscuro);
+  transition: -webkit-text-stroke-color 0.3s, color 0.3s;
+}
+
+.paso:hover .paso-numero {
+  color: var(--blanco);
+  -webkit-text-stroke-color: var(--blanco);
+}
+
+.paso h3 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.paso p {
+  color: var(--gris);
+  line-height: 1.6;
+}
+
+/* --- Ubicación --- */
+.ubicacion {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 50px;
+  align-items: center;
+}
+
+.ubicacion-mapa {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+/* El mapa en blanco y negro, para que no rompa la paleta */
+.ubicacion-mapa iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  filter: grayscale(1) invert(0.92) contrast(0.9);
+}
+
+.ubicacion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+}
+
+.ubicacion-calle {
+  margin: 14px 0 8px;
+  font-size: clamp(2rem, 4.5vw, 3rem);
+}
+
+.ubicacion-zona {
+  margin-bottom: 22px;
+  color: var(--gris);
+}
+
+.horarios-tabla-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.horarios-fila {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--borde);
+}
+
+.horarios-fila span {
+  color: var(--gris);
+}
+
+.horarios-fila strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.horarios-cerrado {
+  margin-top: 14px;
+  color: var(--gris-oscuro);
+  font-size: 0.85rem;
+}
+
+/* --- Opiniones --- */
+.opiniones {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.opinion {
+  display: flex;
+  flex-direction: column;
+  padding: 32px 28px;
+  background: var(--negro);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  transition: border-color 0.3s, transform 0.4s var(--ease);
+}
+
+.opinion:hover {
+  border-color: var(--gris-oscuro);
+  transform: translateY(-6px);
+}
+
+.opinion-estrellas {
+  margin-bottom: 18px;
+  letter-spacing: 0.2em;
+}
+
+.opinion blockquote {
+  flex: 1;
+  color: #bdbdbd;
+  line-height: 1.7;
+}
+
+.opinion figcaption {
+  margin-top: 22px;
+  font-weight: 800;
+}
+
+/* --- Llamado final --- */
+.final {
+  padding: clamp(100px, 14vw, 170px) 20px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse 60% 70% at 50% 100%, rgba(255, 255, 255, 0.08), transparent 70%),
+    var(--negro);
+}
+
+.final-titulo {
+  margin-bottom: 40px;
+  font-size: clamp(2.8rem, 9vw, 6.5rem);
+}
+
+.final-btn {
+  min-height: 62px;
+  padding: 0 44px;
+}
+
+/* --- Celular --- */
+@media (max-width: 860px) {
+  .perfil,
+  .ubicacion {
+    grid-template-columns: 1fr;
+  }
+
+  .perfil-foto {
+    width: min(360px, calc(100% - 18px));
+  }
+
+  .pasos,
+  .opiniones {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-acciones {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-acciones .btn {
+    width: 100%;
+  }
+}

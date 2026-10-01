@@ -1,0 +1,171 @@
+.cal-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.cal-mes {
+  font-size: 1.15rem;
+  font-weight: 900;
+  font-style: italic;
+  text-transform: capitalize;
+  animation: subir 0.4s var(--ease) both;
+}
+
+.cal-flecha {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1px solid var(--borde-fuerte);
+  border-radius: 50%;
+  font-size: 1.4rem;
+  line-height: 1;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.cal-flecha:hover:not(:disabled) {
+  background: var(--blanco);
+  color: var(--negro);
+}
+
+.cal-flecha:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.cal-flecha:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+.cal-grilla {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cal-semana {
+  padding-bottom: 8px;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gris-oscuro);
+}
+
+.cal-dia {
+  position: relative;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  background: var(--grafito);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.25s var(--rebote);
+  animation: pop 0.35s var(--ease) both;
+}
+
+.cal-dia:hover:not(:disabled):not(.activo) {
+  border-color: var(--gris);
+  transform: translateY(-2px);
+}
+
+.cal-dia.hoy::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.cal-dia.activo {
+  background: var(--blanco);
+  color: var(--negro);
+  border-color: var(--blanco);
+  transform: scale(1.06);
+  box-shadow: 0 8px 26px rgba(255, 255, 255, 0.18);
+}
+
+.cal-dia:disabled {
+  background: transparent;
+  border-color: transparent;
+  color: #2c2c2c;
+  cursor: not-allowed;
+}
+
+/* --- Horarios --- */
+.horarios {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.horarios-titulo {
+  margin-bottom: 10px;
+}
+
+.horarios-grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  gap: 8px;
+}
+
+.horario {
+  height: 46px;
+  background: var(--grafito);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: 10px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.25s var(--rebote);
+  animation: pop 0.3s var(--ease) both;
+}
+
+.horario:hover:not(:disabled):not(.activo) {
+  border-color: var(--blanco);
+  transform: translateY(-2px);
+}
+
+.horario.activo {
+  background: var(--blanco);
+  color: var(--negro);
+  border-color: var(--blanco);
+  transform: scale(1.05);
+}
+
+.horario:disabled {
+  color: #333;
+  background: transparent;
+  border-style: dashed;
+  border-color: #1d1d1d;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.horario.esqueleto {
+  display: block;
+  border-color: transparent;
+  background: linear-gradient(90deg, #0d0d0d 0%, #1a1a1a 50%, #0d0d0d 100%);
+  background-size: 200% 100%;
+  animation: brillo 1.2s linear infinite;
+}
+
+@keyframes brillo {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.horarios-vacio {
+  padding: 22px;
+  text-align: center;
+  color: var(--gris);
+  border: 1px dashed var(--borde-fuerte);
+  border-radius: 12px;
+}

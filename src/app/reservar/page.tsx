@@ -1,478 +1,336 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import {
-  eachDayOfInterval,
-  startOfMonth,
-  endOfMonth,
-  format,
-  getDay,
-  addMonths,
-  subMonths,
-  isSameDay,
-  isBefore,
-  startOfToday,
-  startOfDay,
-} from "date-fns";
-import { es } from "date-fns/locale";
-import "./estilos.css";
-import Footer from "../components/footer";
+import { FormEvent, Suspense, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { format, getDay, isSameDay, startOfToday } from "date-fns";
 import Navbar from "../components/navbar";
+import Footer from "../components/footer";
+import Modal, { TipoModal } from "../components/modal";
+import { Calendario, SelectorHorario } from "../components/calendario";
+import { DURACION_TURNO_MIN, ahoraEnCordoba, horariosDelDia, instanteTurno } from "../lib/horarios";
+import { DIRECCION } from "../lib/local";
+import { fechaLarga as formatearFecha } from "../lib/formato";
+import "./estilos.css";
 
-function ReservasContent() {
-  const searchParams = useSearchParams();
+type Aviso = { tipo: TipoModal; titulo: string; mensaje: string; alCerrar?: () => void } | null;
+
+const PASOS = ["Día", "Horario", "Tus datos"];
+
+// Link para sumar el turno a Google Calendar
+function linkCalendario(dia: string, hora: string) {
+  const inicio = instanteTurno(dia, hora);
+  const fin = new Date(inicio.getTime() + DURACION_TURNO_MIN * 60_000);
+  const f = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const p = new URLSearchParams({
+    action: "TEMPLATE",
+    text: "Turno en ONE Peluquería",
+    dates: `${f(inicio)}/${f(fin)}`,
+    details: "Turno con Héctor Rodríguez. Para modificarlo o cancelarlo, entrá a Mi turno en la web.",
+    location: `${DIRECCION.calle}, ${DIRECCION.zona}`,
+  });
+  return `https://calendar.google.com/calendar/render?${p}`;
+}
+
+function Reservar() {
+  const params = useSearchParams();
   const router = useRouter();
 
-  const editId = searchParams.get("edit");
-  const nombreUrl = searchParams.get("nombre")
-    ? decodeURIComponent(searchParams.get("nombre")!)
-    : "";
-  const telUrl = searchParams.get("tel") || "";
+  const editId = params.get("edit");
+  const nombreEdit = params.get("nombre") ?? "";
+  const telEdit = (params.get("tel") ?? "").replace(/\D/g, "");
 
-  const [fechaReferencia, setFechaReferencia] = useState(new Date());
-  const [seleccion, setSeleccion] = useState<Date | null>(null);
-  const [paso, setPaso] = useState(1);
-  const [horario, setHorario] = useState("");
-  const [turnosOcupados, setTurnosOcupados] = useState<string[]>([]);
-  const [cargando, setCargando] = useState(false);
+  const [paso, setPaso] = useState(0);
+  const [mes, setMes] = useState(startOfToday());
+  const [dia, setDia] = useState<Date | null>(null);
+  const [hora, setHora] = useState("");
+  const [ocupados, setOcupados] = useState<string[]>([]);
+  const [cargandoHoras, setCargandoHoras] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [datos, setDatos] = useState({ nombre: "", apellido: "", telefono: "" });
+  const [aviso, setAviso] = useState<Aviso>(null);
+  const [confirmado, setConfirmado] = useState<{ dia: string; hora: string } | null>(null);
 
-  const [statusModal, setStatusModal] = useState<{
-    visible: boolean;
-    tipo: "success" | "error" | "warning";
-    mensaje: string;
-    accionOk?: () => void;
-  }>({
-    visible: false,
-    tipo: "success",
-    mensaje: "",
-  });
+  const diaStr = dia ? format(dia, "yyyy-MM-dd") : "";
+  const horarios = dia ? horariosDelDia(getDay(dia)) : [];
+  const esHoy = dia && isSameDay(dia, startOfToday());
+  // Los horarios de hoy que ya pasaron quedan bloqueados (con hora de Córdoba)
+  const pasadosHasta = esHoy ? ahoraEnCordoba().minutos : -1;
 
-  const [datos, setDatos] = useState({
-    nombre: "",
-    apellido: "",
-    telefono: "",
-  });
+  // Solo vale la respuesta del último día pedido (si se toca rápido otro día, la anterior se descarta)
+  const pedidoRef = useRef("");
 
-  const hoy = startOfToday();
-  const inicioMes = startOfMonth(fechaReferencia);
-  const finMes = endOfMonth(fechaReferencia);
-
-  const diasDelMes = eachDayOfInterval({
-    start: inicioMes,
-    end: finMes,
-  });
-
-  const espaciosVacios = Array.from({
-    length: getDay(inicioMes),
-  });
-
-  const diasSemana = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-  const horariosDisponibles = [];
-
-  for (let h = 9; h <= 20; h++) {
-    horariosDisponibles.push(`${h}:00`, `${h}:30`);
-  }
-  horariosDisponibles.push("21:00");
-
-  useEffect(() => {
-    if (seleccion) {
-      const buscarOcupados = async () => {
-        try {
-          const fechaStr = format(seleccion, "yyyy-MM-dd");
-          const res = await fetch(`/api/turnos?dia=${fechaStr}`);
-          const data = await res.json();
-
-          setTurnosOcupados(data.map((t: any) => t.Turno.Hora));
-          setHorario("");
-        } catch (error) {
-          console.error(error);
-        }
-      };
-      buscarOcupados();
+  const cargarOcupados = async (d: string) => {
+    pedidoRef.current = d;
+    setCargandoHoras(true);
+    try {
+      const res = await fetch(`/api/turnos?dia=${d}`, { cache: "no-store" });
+      const data = await res.json();
+      if (pedidoRef.current !== d) return;
+      setOcupados(Array.isArray(data) ? data.map((t: { Turno: { Hora: string } }) => t.Turno.Hora) : []);
+    } catch {
+      if (pedidoRef.current === d) setOcupados([]);
+    } finally {
+      if (pedidoRef.current === d) setCargandoHoras(false);
     }
-  }, [seleccion]);
-
-  const mostrarAlerta = (
-    tipo: "success" | "error" | "warning",
-    mensaje: string,
-    accionOk?: () => void
-  ) => {
-    setStatusModal({
-      visible: true,
-      tipo,
-      mensaje,
-      accionOk,
-    });
   };
 
-  const manejarEnvio = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const elegirDia = (d: Date) => {
+    setDia(d);
+    setHora("");
+    cargarOcupados(format(d, "yyyy-MM-dd"));
+    // Avanza solo al horario: un toque menos
+    window.setTimeout(() => setPaso(1), 180);
+  };
 
-    if (!horario || !seleccion) {
-      return mostrarAlerta(
-        "warning",
-        "Por favor, seleccioná un horario antes de continuar."
-      );
+  const enviar = async (e?: FormEvent) => {
+    e?.preventDefault();
+    if (!dia || !hora) return;
+
+    const nombre = editId ? nombreEdit : `${datos.nombre} ${datos.apellido}`.trim();
+    const telefono = editId ? telEdit : datos.telefono.replace(/\D/g, "");
+
+    if (!editId && (datos.nombre.trim().length < 2 || datos.apellido.trim().length < 1)) {
+      return setAviso({ tipo: "aviso", titulo: "Faltan datos", mensaje: "Completá tu nombre y apellido." });
+    }
+    if (telefono.length < 8) {
+      return setAviso({ tipo: "aviso", titulo: "Revisá el teléfono", mensaje: "Ingresá tu número con característica, por ejemplo 351 123 4567." });
     }
 
-    const nombreFinal = editId
-      ? nombreUrl
-      : `${datos.nombre} ${datos.apellido}`.trim();
-
-    const telefonoLimpio = editId
-      ? telUrl.toString().replace(/\D/g, "")
-      : datos.telefono.toString().replace(/\D/g, "");
-
-    const telefonoFinal = Number(telefonoLimpio);
-
-    if (!nombreFinal || !telefonoFinal) {
-      return mostrarAlerta(
-        "warning",
-        "Completá los datos de contacto necesarios."
-      );
-    }
-
-    setCargando(true);
-
+    setEnviando(true);
     try {
-      if (!editId) {
-        const checkRes = await fetch(`/api/turnos?telefono=${telefonoFinal}`, {
-          cache: "no-store",
-        });
-        const existeTurno = await checkRes.json();
+      const turno = { Dia: diaStr, Hora: hora };
+      const res = editId
+        ? await fetch(`/api/turnos?id=${editId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ Turno: turno, Telefono_Cliente: telefono }),
+          })
+        : await fetch("/api/turnos", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ Nombre_Cliente: nombre, Telefono_Cliente: telefono, Turno: turno }),
+          });
 
-        if (checkRes.ok && existeTurno) {
-          mostrarAlerta(
-            "error",
-            "Ya tenés un turno agendado con este número. No podés tener dos a la vez."
-          );
-          setCargando(false);
-          return;
-        }
-      }
-
-      const turnoData = {
-        Nombre_Cliente: nombreFinal,
-        Telefono_Cliente: telefonoFinal,
-        Turno: {
-          Dia: format(seleccion, "yyyy-MM-dd"),
-          Hora: horario,
-          Estado: "Pending",
-        },
-      };
-
-      const url = editId ? `/api/turnos?id=${editId}` : "/api/turnos";
-      const res = await fetch(url, {
-        method: editId ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(turnoData),
-      });
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
-        mostrarAlerta(
-          "success",
-          editId
-            ? "¡Tu turno se actualizó correctamente!"
-            : "¡Tu reserva fue confirmada con éxito!",
-          () => {
-            router.replace("/consultar");
-          }
-        );
-      } else {
-        mostrarAlerta(
-          "error",
-          "Ocurrió un error al intentar guardar en la base de datos."
-        );
+        setConfirmado({ dia: diaStr, hora });
+        return;
       }
-    } catch (error) {
-      mostrarAlerta("error", "Hubo un error de conexión con el servidor.");
+
+      // Si alguien ganó el horario mientras completaba los datos, vuelve a elegir con la lista al día
+      if (res.status === 409 && !String(data?.error).includes("Ya tenés")) {
+        await cargarOcupados(diaStr);
+        setHora("");
+        setPaso(1);
+      }
+      setAviso({ tipo: "error", titulo: "No se pudo reservar", mensaje: data?.error ?? "Probá de nuevo en un momento." });
+    } catch {
+      setAviso({ tipo: "error", titulo: "Sin conexión", mensaje: "No pudimos comunicarnos con el servidor. Probá de nuevo." });
     } finally {
-      setCargando(false);
+      setEnviando(false);
     }
   };
 
+  const fechaLarga = dia ? formatearFecha(dia) : null;
+
   return (
-    <main className="one-container">
+    <div className="pagina">
       <Navbar />
 
-      <h1 className="one-title">
-        {editId ? (
-          <>MODIFICAR <span>TURNO</span></>
-        ) : (
-          <>RESERVAR <span>TURNO</span></>
-        )}
-      </h1>
+      <main className="pagina-contenido">
+        <h1 className="titulo pagina-titulo">
+          {editId ? "Cambiar" : "Reservar"} <span>turno</span>
+        </h1>
+        {editId && <p className="pagina-bajada">Elegí el nuevo día y horario para el turno de {nombreEdit}.</p>}
 
-      <div className="one-calendario-card">
-        {paso === 1 ? (
-          <div className="one-animate-fade-in">
-            <div className="one-calendario-header">
-              <button
-                className="one-nav-btn"
-                onClick={() => {
-                  setFechaReferencia(subMonths(fechaReferencia, 1));
-                  setSeleccion(null);
-                }}
-                disabled={
-                  format(fechaReferencia, "MM-yyyy") === format(hoy, "MM-yyyy")
-                }
-              >
-                {"<"}
-              </button>
+        {/* Pasos */}
+        <ol className="pasos-barra" aria-label="Pasos de la reserva">
+          {PASOS.map((p, i) => {
+            const habilitado = i === 0 || (i === 1 && dia) || (i === 2 && dia && hora);
+            return (
+              <li key={p}>
+                <button
+                  type="button"
+                  className={`paso-chip ${paso === i ? "actual" : ""} ${paso > i ? "hecho" : ""}`}
+                  onClick={() => habilitado && setPaso(i)}
+                  disabled={!habilitado}
+                  aria-current={paso === i ? "step" : undefined}
+                >
+                  <span>{paso > i ? "✓" : i + 1}</span>
+                  {editId && i === 2 ? "Confirmar" : p}
+                </button>
+              </li>
+            );
+          })}
+        </ol>
 
-              <h2 className="one-mes-titulo">
-                {format(fechaReferencia, "MMMM yyyy", { locale: es })}
-              </h2>
+        <div className="reserva">
+          <section className="tarjeta reserva-panel">
+            {paso === 0 && (
+              <div key="p0" className="reserva-paso">
+                <Calendario mes={mes} onMes={setMes} seleccion={dia} onSeleccion={elegirDia} />
+              </div>
+            )}
 
-              <button
-                className="one-nav-btn"
-                onClick={() => {
-                  setFechaReferencia(addMonths(fechaReferencia, 1));
-                  setSeleccion(null);
-                }}
-              >
-                {">"}
-              </button>
-            </div>
-
-            <div className="one-calendario-grid">
-              {diasSemana.map((d) => (
-                <div key={d} className="one-dia-semana-label">
-                  {d}
+            {paso === 1 && (
+              <div key="p1" className="reserva-paso">
+                <div className="reserva-paso-cabecera">
+                  <button type="button" className="volver" onClick={() => setPaso(0)}>
+                    ← Cambiar día
+                  </button>
+                  <p className="reserva-fecha">{fechaLarga}</p>
                 </div>
-              ))}
+                <SelectorHorario
+                  horarios={horarios}
+                  ocupados={ocupados}
+                  elegido={hora}
+                  onElegir={setHora}
+                  pasadosHasta={pasadosHasta}
+                  cargando={cargandoHoras}
+                />
+                <button type="button" className="btn btn-blanco reserva-continuar" disabled={!hora} onClick={() => setPaso(2)}>
+                  {hora ? `Continuar con las ${hora}` : "Elegí un horario"}
+                </button>
+              </div>
+            )}
 
-              {espaciosVacios.map((_, i) => (
-                <div key={i} className="one-dia-vacio" />
-              ))}
-
-              {diasDelMes.map((dia) => {
-                const estaBloqueado =
-                  isBefore(startOfDay(dia), startOfDay(hoy)) ||
-                  [0, 1].includes(getDay(dia));
-
-                return (
-                  <div
-                    key={dia.toString()}
-                    className={`one-dia-celda ${
-                      seleccion && isSameDay(dia, seleccion)
-                        ? "one-seleccionado"
-                        : ""
-                    } ${estaBloqueado ? "one-deshabilitado" : ""}`}
-                    onClick={() => !estaBloqueado && setSeleccion(dia)}
-                  >
-                    {format(dia, "d")}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="one-calendario-footer">
-              {seleccion ? (
-                <div className="one-info-turno">
-                  <span>
-                    Día:{" "}
-                    <strong>
-                      {format(seleccion, "eeee d 'de' MMMM", { locale: es })}
-                    </strong>
-                  </span>
-
-                  <button className="one-confirm-btn" onClick={() => setPaso(2)}>
-                    CONFIRMAR DÍA
+            {paso === 2 && (
+              <div key="p2" className="reserva-paso">
+                <div className="reserva-paso-cabecera">
+                  <button type="button" className="volver" onClick={() => setPaso(1)}>
+                    ← Cambiar horario
                   </button>
                 </div>
-              ) : (
-                <p className="one-placeholder-text">Elige un día disponible</p>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="one-form-detalles one-animate-fade-in">
-            <button
-              type="button"
-              className="one-back-link"
-              onClick={() => setPaso(1)}
-            >
-              ← Volver
-            </button>
 
-            <h2 className="one-titulo-form">
-              {editId ? "Nuevo Horario" : "Detalles"}
-            </h2>
-
-            <p className="one-fecha-form">
-              {format(seleccion!, "dd 'de' MMMM", { locale: es })}
-            </p>
-
-            <div className="one-input-group">
-              <label>Horario disponible:</label>
-
-              <div className="one-horarios-carrusel">
-                {horariosDisponibles.map((h) => {
-                  const estaOcupado = turnosOcupados.includes(h);
-                  const esHoy = seleccion && isSameDay(seleccion, hoy);
-                  let esHoraPasada = false;
-
-                  if (esHoy) {
-                    const [hT, mT] = h.split(":").map(Number);
-                    const ahora = new Date();
-
-                    if (
-                      hT < ahora.getHours() ||
-                      (hT === ahora.getHours() && mT <= ahora.getMinutes())
-                    ) {
-                      esHoraPasada = true;
-                    }
-                  }
-
-                  const deshabilitado = estaOcupado || esHoraPasada;
-
-                  return (
-                    <button
-                      key={h}
-                      type="button"
-                      disabled={deshabilitado}
-                      className={`one-horario-card ${
-                        horario === h ? "one-active" : ""
-                      } ${deshabilitado ? "one-ocupado" : ""}`}
-                      onClick={() => !deshabilitado && setHorario(h)}
-                    >
-                      {h}
+                {editId ? (
+                  <div className="reserva-edit">
+                    <p>
+                      Vas a mover el turno de <strong>{nombreEdit}</strong> al <strong>{fechaLarga}</strong> a las{" "}
+                      <strong>{hora} hs</strong>.
+                    </p>
+                    <button type="button" className="btn btn-blanco reserva-continuar" onClick={() => enviar()} disabled={enviando}>
+                      {enviando ? <span className="cargando-icono" /> : "Confirmar cambio"}
                     </button>
-                  );
-                })}
+                  </div>
+                ) : (
+                  <form className="reserva-form" onSubmit={enviar} noValidate>
+                    <div className="reserva-form-fila">
+                      <div className="campo">
+                        <input
+                          id="nombre"
+                          placeholder=" "
+                          autoComplete="given-name"
+                          value={datos.nombre}
+                          onChange={(e) => setDatos({ ...datos, nombre: e.target.value })}
+                          required
+                        />
+                        <label htmlFor="nombre">Nombre</label>
+                      </div>
+                      <div className="campo">
+                        <input
+                          id="apellido"
+                          placeholder=" "
+                          autoComplete="family-name"
+                          value={datos.apellido}
+                          onChange={(e) => setDatos({ ...datos, apellido: e.target.value })}
+                          required
+                        />
+                        <label htmlFor="apellido">Apellido</label>
+                      </div>
+                    </div>
+                    <div className="campo">
+                      <input
+                        id="telefono"
+                        type="tel"
+                        inputMode="numeric"
+                        placeholder=" "
+                        autoComplete="tel"
+                        value={datos.telefono}
+                        onChange={(e) => setDatos({ ...datos, telefono: e.target.value })}
+                        required
+                      />
+                      <label htmlFor="telefono">Teléfono (lo usás para ver tu turno)</label>
+                    </div>
+                    <button type="submit" className="btn btn-blanco reserva-continuar" disabled={enviando}>
+                      {enviando ? <span className="cargando-icono" /> : "Confirmar reserva"}
+                    </button>
+                  </form>
+                )}
               </div>
-            </div>
-
-            {editId ? (
-              <div
-                style={{
-                  marginTop: "30px",
-                  borderTop: "1px solid #222",
-                  paddingTop: "20px",
-                }}
-              >
-                <p
-                  style={{
-                    color: "#888",
-                    marginBottom: "15px",
-                    fontSize: "14px",
-                  }}
-                >
-                  Modificando turno de:{" "}
-                  <strong style={{ color: "#fff" }}>{nombreUrl}</strong>
-                </p>
-
-                <button
-                  onClick={() => manejarEnvio()}
-                  className="one-confirm-btn one-final"
-                  disabled={!horario || cargando}
-                >
-                  {cargando
-                    ? "PROCESANDO..."
-                    : horario
-                    ? `CONFIRMAR PARA LAS ${horario} HS`
-                    : "ELEGÍ UN HORARIO"}
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={manejarEnvio}>
-                <div className="one-input-group">
-                  <input
-                    type="text"
-                    placeholder="Nombre"
-                    required
-                    onChange={(e) =>
-                      setDatos({ ...datos, nombre: e.target.value })
-                    }
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Apellido"
-                    required
-                    onChange={(e) =>
-                      setDatos({ ...datos, apellido: e.target.value })
-                    }
-                  />
-
-                  <input
-                    type="number"
-                    placeholder="Teléfono"
-                    required
-                    onChange={(e) =>
-                      setDatos({ ...datos, telefono: e.target.value })
-                    }
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="one-confirm-btn one-final"
-                  disabled={cargando}
-                >
-                  {cargando ? "VERIFICANDO..." : "Finalizar Reserva"}
-                </button>
-              </form>
             )}
-          </div>
-        )}
-      </div>
+          </section>
 
-      {statusModal.visible && (
-        <div className="one-feedback-modal-overlay">
-          <div className="one-feedback-modal-card one-animate-pop-in">
-            <div className="one-icon-wrapper">
-              {statusModal.tipo === "success" && (
-                <div className="one-success-checkmark">
-                  <div className="one-check-icon">
-                    <span className="one-icon-line one-line-tip"></span>
-                    <span className="one-icon-line one-line-long"></span>
-                    <div className="one-icon-circle"></div>
-                    <div className="one-icon-fix"></div>
-                  </div>
-                </div>
-              )}
-
-              {statusModal.tipo === "error" && (
-                <div className="one-error-xmark">
-                  <div className="one-x-icon">
-                    <span className="one-x-line one-line-left"></span>
-                    <span className="one-x-line one-line-right"></span>
-                  </div>
-                </div>
-              )}
-
-              {statusModal.tipo === "warning" && (
-                <div className="one-warning-mark">!</div>
-              )}
+          {/* Resumen que se va completando */}
+          <aside className="tarjeta resumen" aria-live="polite">
+            <p className="etiqueta">Tu turno</p>
+            <div className={`resumen-fila ${dia ? "lleno" : ""}`}>
+              <span>Día</span>
+              <strong>{fechaLarga ?? "—"}</strong>
             </div>
+            <div className={`resumen-fila ${hora ? "lleno" : ""}`}>
+              <span>Horario</span>
+              <strong>{hora ? `${hora} hs` : "—"}</strong>
+            </div>
+            <div className="resumen-fila lleno">
+              <span>Con</span>
+              <strong>Héctor Rodríguez</strong>
+            </div>
+            <div className="resumen-fila lleno">
+              <span>Dónde</span>
+              <strong>{DIRECCION.calle}</strong>
+            </div>
+          </aside>
+        </div>
+      </main>
 
-            <p className="one-feedback-mensaje">{statusModal.mensaje}</p>
-
-            <button
-              className="one-feedback-btn"
-              onClick={() => {
-                setStatusModal({ ...statusModal, visible: false });
-                if (statusModal.accionOk) statusModal.accionOk();
-              }}
-            >
+      {aviso && (
+        <Modal
+          tipo={aviso.tipo}
+          titulo={aviso.titulo}
+          onCerrar={() => setAviso(null)}
+          acciones={
+            <button type="button" className="btn btn-blanco" onClick={() => setAviso(null)}>
               Entendido
             </button>
-          </div>
-        </div>
+          }
+        >
+          <p>{aviso.mensaje}</p>
+        </Modal>
+      )}
+
+      {confirmado && (
+        <Modal
+          tipo="ok"
+          titulo={editId ? "¡Turno actualizado!" : "¡Turno confirmado!"}
+          acciones={
+            <>
+              <a href={linkCalendario(confirmado.dia, confirmado.hora)} target="_blank" rel="noopener noreferrer" className="btn btn-borde">
+                Agendar
+              </a>
+              <button type="button" className="btn btn-blanco" onClick={() => router.replace("/consultar")}>
+                Ver mi turno
+              </button>
+            </>
+          }
+        >
+          <p>
+            Te esperamos el <strong className="modal-resaltado">{fechaLarga?.toLowerCase()}</strong> a las{" "}
+            <strong className="modal-resaltado">{confirmado.hora} hs</strong>.
+          </p>
+        </Modal>
       )}
 
       <Footer />
-    </main>
+    </div>
   );
 }
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Cargando...</div>}>
-      <ReservasContent />
+    <Suspense fallback={<div className="pagina" />}>
+      <Reservar />
     </Suspense>
   );
 }
+

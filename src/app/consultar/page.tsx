@@ -1,21 +1,22 @@
 "use client";
-import { useState } from "react";
-import { format, isValid, differenceInHours } from "date-fns";
-import { es } from "date-fns/locale";
-import Link from "next/link";
-import Footer from "../components/footer";
-import "./estilos.css";
-import Navbar from "../components/navbar";
 
-// 1. Interfaz para TypeScript
+import { FormEvent, useState } from "react";
+import Link from "next/link";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import Navbar from "../components/navbar";
+import Footer from "../components/footer";
+import Modal from "../components/modal";
+import { HORAS_ANTICIPACION, ahoraEnCordoba, instanteTurno } from "../lib/horarios";
+import { capitalizar, diasHasta } from "../lib/formato";
+import { DIRECCION, LINK_COMO_LLEGAR } from "../lib/local";
+import "./estilos.css";
+
 interface TurnoData {
   _id: string;
   Nombre_Cliente: string;
-  Telefono_Cliente: string;
-  Turno: {
-    Dia: string;
-    Hora: string;
-  };
+  Telefono_Cliente: number;
+  Turno: { Dia: string; Hora: string };
 }
 
 export default function ConsultarTurno() {
@@ -23,269 +24,238 @@ export default function ConsultarTurno() {
   const [turno, setTurno] = useState<TurnoData | null>(null);
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
-  
-  // Estados para modales personalizados
-  const [confirmarEliminar, setConfirmarEliminar] = useState(false);
-  const [mostrarModalExito, setMostrarModalExito] = useState(false);
+  const [confirmarCancelar, setConfirmarCancelar] = useState(false);
+  const [cancelado, setCancelado] = useState(false);
+  const [errorModal, setErrorModal] = useState("");
 
-  // Agregamos que 'e' pueda ser un FormEvent o null para llamarlo desde el onClick
-  const buscarTurno = async (e: React.FormEvent | null) => {
-    if (e) e.preventDefault();
-    if (!telefono) {
-      setError("Meté un número primero.");
+  const buscar = async (e: FormEvent) => {
+    e.preventDefault();
+    const tel = telefono.replace(/\D/g, "");
+    if (tel.length < 8) {
+      setError("Ingresá tu número completo, con característica.");
       return;
     }
     setCargando(true);
     setError("");
-    setTurno(null);
-
     try {
-      const res = await fetch(`/api/turnos?telefono=${telefono}`, {
-        method: "GET",
-        cache: "no-store",
-      });
+      const res = await fetch(`/api/turnos?telefono=${tel}`, { cache: "no-store" });
       const data = await res.json();
-
-      if (res.ok && data) {
-        setTurno(data);
-      } else {
-        setError(data?.error || "Error al buscar el turno.");
-      }
-    } catch (err) {
-      setError("Error de red o servidor offline.");
+      if (res.ok) setTurno(data);
+      else setError(data?.error ?? "No encontramos tu turno.");
+    } catch {
+      setError("No pudimos conectarnos. Probá de nuevo.");
     } finally {
       setCargando(false);
     }
   };
 
-  const solicitarCancelacion = () => {
-    if (!esEditable()) {
-      alert("No podés cancelar turnos con menos de 8 horas de anticipación.");
-      return;
-    }
-    setConfirmarEliminar(true);
-  };
-
-  const ejecutarEliminacion = async () => {
-    if (!turno) return; 
-    
-    setConfirmarEliminar(false);
+  const cancelar = async () => {
+    if (!turno) return;
+    setConfirmarCancelar(false);
     setCargando(true);
     try {
-      const res = await fetch(`/api/turnos?id=${turno._id}&accion=Cancelled`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setMostrarModalExito(true);
-      } else {
-        alert("Hubo un problema al cancelar.");
-      }
-    } catch (err) {
-      alert("Error de conexión.");
+      const res = await fetch(`/api/turnos?id=${turno._id}&telefono=${turno.Telefono_Cliente}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) setCancelado(true);
+      else setErrorModal(data?.error ?? "No se pudo cancelar el turno.");
+    } catch {
+      setErrorModal("No pudimos conectarnos. Probá de nuevo.");
     } finally {
       setCargando(false);
     }
   };
 
-  const cerrarModalExito = () => {
-    setMostrarModalExito(false);
+  const reiniciar = () => {
     setTurno(null);
     setTelefono("");
+    setCancelado(false);
+    setError("");
   };
 
-  const esEditable = () => {
-    // Si no hay turno o faltan datos, frena acá
-    if (!turno || !turno.Turno?.Dia || !turno.Turno?.Hora) return false;
+  const instante = turno ? instanteTurno(turno.Turno.Dia, turno.Turno.Hora) : null;
+  const faltanHoras = instante ? (instante.getTime() - Date.now()) / 3_600_000 : 0;
+  const editable = faltanHoras >= HORAS_ANTICIPACION;
+  const fecha = turno ? new Date(`${turno.Turno.Dia}T12:00:00`) : null;
 
-    const [year, month, day] = turno.Turno.Dia.split("-").map(Number);
-    const [hour, minute] = turno.Turno.Hora.split(":").map(Number);
-
-    const fechaTurno = new Date(year, month - 1, day, hour, minute);
-    const ahora = new Date();
-
-    const horasDiferencia = differenceInHours(fechaTurno, ahora);
-    return horasDiferencia >= 8;
-  };
-
-  const obtenerFechaFormateada = () => {
-    // Si no hay turno o falta el día, frena acá
-    if (!turno || !turno.Turno?.Dia) return "";
-
-    const [year, month, day] = turno.Turno.Dia.split("-").map(Number);
-    const fecha = new Date(year, month - 1, day);
-
-    return isValid(fecha)
-      ? format(fecha, "eeee d 'de' MMMM", { locale: es })
-      : "Fecha no válida";
-  };
-
-  const editable = esEditable();
+  // Por días de calendario: "Es hoy", "Es mañana", "Es pasado mañana", "Faltan 5 días"
+  const dias = turno ? diasHasta(turno.Turno.Dia, ahoraEnCordoba().dia) : 0;
+  const cuenta =
+    dias <= 0
+      ? faltanHoras >= 1
+        ? `Es hoy · faltan ${Math.floor(faltanHoras)} h`
+        : "Es hoy, en un rato"
+      : dias === 1
+        ? "Es mañana"
+        : dias === 2
+          ? "Es pasado mañana"
+          : `Faltan ${dias} días`;
 
   return (
-    <div className="one-main-wrapper">
-      
-      {/* 1. MODAL DE CONFIRMACIÓN */}
-      {confirmarEliminar && (
-        <div className="one-modal-overlay">
-          <div className="one-modal-card one-modal-critical">
-            <div className="one-modal-icon-wrapper">
-              <div className="one-modal-icon-warning">⚠️</div>
-            </div>
-            <h3 className="one-modal-title">¿Eliminar Turno?</h3>
-            <p className="one-modal-text">
-              Esta acción removerá permanentemente la reserva seleccionada del panel de control.
-            </p>
-            <div className="one-modal-actions-row">
-              <button
-                onClick={() => setConfirmarEliminar(false)}
-                className="one-btn-modal-back"
-              >
-                VOLVER
-              </button>
-              <button
-                onClick={ejecutarEliminacion}
-                className="one-btn-modal-confirm-delete"
-              >
-                SÍ, ELIMINAR
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="pagina">
+      <Navbar />
 
-      {/* 2. MODAL DE ÉXITO */}
-      {mostrarModalExito && (
-        <div className="one-modal-overlay">
-          <div className="one-modal-card">
-            <div className="one-modal-icon-wrapper">
-              <div className="one-modal-checkmark-success">
-                <span className="checkmark-icon-badge">✓</span>
-              </div>
-            </div>
-            <h3 className="one-modal-title">Turno Cancelado</h3>
-            <p className="one-modal-text">
-              Tu reserva fue dada de baja correctamente. ¡Te esperamos la próxima!
-            </p>
-            <button
-              onClick={cerrarModalExito}
-              className="one-btn-form-main"
-              style={{ width: "100%", padding: "12px" }}
-            >
-              Entendido
-            </button>
-          </div>
-        </div>
-      )}
-
-      <Navbar/>
-
-      <div className="one-container-consultar">
-        <h2 className="one-main-title">
-          MI <span>TURNO</span>
-        </h2>
+      <main className="pagina-contenido consultar">
+        <h1 className="titulo pagina-titulo">
+          Mi <span>turno</span>
+        </h1>
 
         {!turno ? (
-          <div className="one-location-card one-buscar-card">
-            <p className="one-buscar-text">
-              Ingresá tu teléfono para verificar tu reserva.
-            </p>
-            <input
-              type="text"
-              placeholder="Ej: 351..."
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-              className="one-input-premium-propio"
-            />
-            {error && (
-              <p
-                className="one-error-text"
-                style={{
-                  color: "#ff4444",
-                  marginTop: "10px",
-                  fontSize: "14px",
-                }}
-              >
-                {error}
+          <>
+            <p className="pagina-bajada">Ingresá el teléfono con el que reservaste para ver, cambiar o cancelar tu turno.</p>
+            <form className="tarjeta buscar" onSubmit={buscar}>
+              <div className="campo">
+                <input
+                  id="tel"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  placeholder=" "
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                />
+                <label htmlFor="tel">Tu teléfono</label>
+              </div>
+              {error && (
+                <p className="buscar-error" role="alert">
+                  {error}
+                </p>
+              )}
+              <button type="submit" className="btn btn-blanco" disabled={cargando}>
+                {cargando ? <span className="cargando-icono" /> : "Buscar mi turno"}
+              </button>
+              <p className="buscar-pie">
+                ¿Todavía no tenés? <Link href="/reservar">Reservá acá</Link>
               </p>
-            )}
-            <button
-              type="button"
-              onClick={() => buscarTurno(null)}
-              className="one-btn-buscar-reserva"
-              disabled={cargando}
-            >
-              {cargando ? "BUSCANDO..." : "BUSCAR RESERVA"}
-            </button>
-          </div>
+            </form>
+          </>
         ) : (
-          <div className="one-review-card one-turno-confirmado">
-            <p className="one-turno-badge">TURNO CONFIRMADO</p>
-            <h3 className="one-turno-title">
-              Hola, <span>{turno.Nombre_Cliente}</span>
-            </h3>
-            <p className="one-turno-text">Tu cita es el</p>
-            <div className="one-turno-fecha">{obtenerFechaFormateada()}</div>
-            <p className="one-turno-hora">
-              a las <strong>{turno.Turno.Hora} hs</strong>
+          <div className="ticket">
+            <div className="ticket-cabecera">
+              <span className="ticket-badge">Turno confirmado</span>
+              <span className="ticket-cuenta">{cuenta}</span>
+            </div>
+
+            <p className="ticket-hola">
+              Hola, <strong>{turno.Nombre_Cliente}</strong>
             </p>
+
+            <div className="ticket-fecha">
+              <span className="ticket-dia">{fecha && format(fecha, "d")}</span>
+              <div>
+                <p className="ticket-mes">{fecha && format(fecha, "MMMM", { locale: es })}</p>
+                <p className="ticket-semana">{fecha && capitalizar(format(fecha, "EEEE", { locale: es }))}</p>
+              </div>
+              <span className="ticket-hora">{turno.Turno.Hora} hs</span>
+            </div>
+
+            {/* Corte de ticket */}
+            <div className="ticket-corte" aria-hidden />
+
+            <div className="ticket-datos">
+              <div>
+                <span>Con</span>
+                <strong>Héctor Rodríguez</strong>
+              </div>
+              <div>
+                <span>Dónde</span>
+                <a href={LINK_COMO_LLEGAR} target="_blank" rel="noopener noreferrer">
+                  {DIRECCION.calle} ↗
+                </a>
+              </div>
+            </div>
 
             {!editable && (
-              <p
-                style={{
-                  color: "#ff4444",
-                  fontSize: "12px",
-                  marginTop: "5px",
-                  fontWeight: "600",
-                  textAlign: "center",
-                }}
-              >
-                * Los turnos no pueden modificarse ni cancelarse con menos de 8
-                horas de antelación.
+              <p className="ticket-aviso">
+                Faltan menos de {HORAS_ANTICIPACION} horas: el turno ya no se puede modificar ni cancelar desde la web.
               </p>
             )}
 
-            <div className="one-acciones-container">
+            <div className="ticket-acciones">
               {editable ? (
                 <Link
                   href={`/reservar?edit=${turno._id}&nombre=${encodeURIComponent(turno.Nombre_Cliente)}&tel=${turno.Telefono_Cliente}`}
-                  className="one-btn-form-main"
+                  className="btn btn-blanco"
                 >
-                  Modificar
+                  Cambiar día u hora
                 </Link>
               ) : (
-                <button
-                  className="one-btn-form-main"
-                  style={{ opacity: 0.4, cursor: "not-allowed" }}
-                  disabled
-                >
-                  Bloqueado
-                </button>
+                <span className="btn btn-blanco" aria-disabled="true">
+                  Cambiar día u hora
+                </span>
               )}
-
               <button
-                onClick={solicitarCancelacion}
-                className="one-btn-cancelar"
-                disabled={cargando || !editable}
-                style={!editable ? { opacity: 0.4, cursor: "not-allowed" } : {}}
+                type="button"
+                className="btn btn-borde"
+                onClick={() => setConfirmarCancelar(true)}
+                disabled={!editable || cargando}
               >
-                {cargando ? "CANCELANDO..." : "Cancelar"}
+                Cancelar turno
               </button>
             </div>
 
-            <button
-              onClick={() => {
-                setTurno(null);
-                setError("");
-                setTelefono("");
-              }}
-              className="one-btn-volver-simple"
-            >
-              ← BUSCAR OTRO TELÉFONO
+            <button type="button" className="volver ticket-otro" onClick={reiniciar}>
+              ← Buscar otro teléfono
             </button>
           </div>
         )}
-      </div>
-      <Footer/>
+      </main>
+
+      {confirmarCancelar && (
+        <Modal
+          tipo="aviso"
+          titulo="¿Cancelar el turno?"
+          onCerrar={() => setConfirmarCancelar(false)}
+          acciones={
+            <>
+              <button type="button" className="btn btn-borde" onClick={() => setConfirmarCancelar(false)}>
+                Volver
+              </button>
+              <button type="button" className="btn btn-blanco" onClick={cancelar}>
+                Sí, cancelar
+              </button>
+            </>
+          }
+        >
+          <p>El horario queda libre para otra persona. Si querés, podés sacar uno nuevo cuando quieras.</p>
+        </Modal>
+      )}
+
+      {cancelado && (
+        <Modal
+          tipo="ok"
+          titulo="Turno cancelado"
+          onCerrar={reiniciar}
+          acciones={
+            <>
+              <button type="button" className="btn btn-borde" onClick={reiniciar}>
+                Listo
+              </button>
+              <Link href="/reservar" className="btn btn-blanco">
+                Sacar otro
+              </Link>
+            </>
+          }
+        >
+          <p>Tu reserva se dio de baja. ¡Te esperamos la próxima!</p>
+        </Modal>
+      )}
+
+      {errorModal && (
+        <Modal
+          tipo="error"
+          titulo="No se pudo cancelar"
+          onCerrar={() => setErrorModal("")}
+          acciones={
+            <button type="button" className="btn btn-blanco" onClick={() => setErrorModal("")}>
+              Entendido
+            </button>
+          }
+        >
+          <p>{errorModal}</p>
+        </Modal>
+      )}
+
+      <Footer />
     </div>
   );
 }
