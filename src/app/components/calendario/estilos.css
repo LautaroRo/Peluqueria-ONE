@@ -42,16 +42,16 @@
 
 .cal-grilla {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 6px;
 }
 
 .cal-semana {
   padding-bottom: 8px;
   text-align: center;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--gris-oscuro);
 }
@@ -168,4 +168,18 @@
   color: var(--gris);
   border: 1px dashed var(--borde-fuerte);
   border-radius: 12px;
+}
+
+@media (max-width: 420px) {
+  .cal-grilla {
+    gap: 4px;
+  }
+
+  .cal-semana {
+    letter-spacing: 0;
+  }
+
+  .cal-dia {
+    border-radius: 8px;
+  }
 }

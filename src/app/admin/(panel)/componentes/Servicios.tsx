@@ -27,8 +27,9 @@ function Campos({ b, onCambio }: { b: Borrador; onCambio: (b: Borrador) => void 
   return (
     <div className="serv-campos">
       <input className="buscador" value={b.nombre} onChange={(e) => onCambio({ ...b, nombre: e.target.value })} placeholder="Nombre" aria-label="Nombre" maxLength={60} />
-      <input
-        className="buscador"
+      <textarea
+        className="buscador serv-desc"
+        rows={2}
         value={b.descripcion}
         onChange={(e) => onCambio({ ...b, descripcion: e.target.value })}
         placeholder="Descripción corta (opcional)"

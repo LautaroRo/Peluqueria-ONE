@@ -167,6 +167,9 @@ a {
 
 /* Enlace de "volver" en forma de botón */
 .volver {
+  /* El área táctil es más grande que el texto, sin mover el diseño */
+  padding: 12px 0;
+  margin: -12px 0;
   background: none;
   border: none;
   color: var(--gris);
@@ -286,6 +289,7 @@ a {
 
 .modal {
   width: min(440px, 100%);
+  min-width: 0;
   padding: 36px 30px 30px;
   text-align: center;
   background: var(--carbon);
@@ -397,5 +401,35 @@ a {
   .revelar {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* En pantallas táctiles no hay hover: sin esto el relleno del botón queda "pegado" después de tocarlo */
+@media (hover: none) {
+  .btn:hover::before {
+    transform: scaleX(0);
+  }
+
+  .btn-blanco:hover {
+    color: var(--negro);
+  }
+
+  .btn-borde:hover {
+    color: var(--blanco);
+  }
+}
+
+@media (max-width: 420px) {
+  .modal {
+    padding: 30px 20px 22px;
+  }
+
+  /* Dos botones con texto largo no entran lado a lado: van uno arriba del otro, el principal arriba */
+  .modal-acciones {
+    flex-direction: column-reverse;
+  }
+
+  .btn {
+    letter-spacing: 0.12em;
   }
 }
